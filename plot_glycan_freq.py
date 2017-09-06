@@ -13,7 +13,7 @@ from matplotlib.ticker import AutoMinorLocator
 __author__ = 'colin'
 
 
-def line(df, out_string, item, n, ab_time, bnab_time):
+def line(df, out_string, item, glyc_site, ab_time, bnab_time):
     '''
     :param df: (dataframe) containing the data to plot
     :param out_string: filepath and file name prefix
@@ -22,14 +22,19 @@ def line(df, out_string, item, n, ab_time, bnab_time):
     :return: None, writes figure to file
     '''
 
-    outfile = out_string + "_" + n
+    # force Arial font
+    mpl.rc('font', serif='Arial')
+    mpl.rcParams['font.family'] = 'Arial'
+
+    outfile = out_string + "_" + glyc_site + "png"
     print("outfile is :", outfile)
+
     headers = list(df)
 
     # set axis limits
     xmax = max(df[headers[0]]) + 10
     xmin = 0
-    ymax = 101
+    ymax = 100
     ymin = 0
 
     fig, ax = plt.subplots(1, 1)
@@ -50,6 +55,7 @@ def line(df, out_string, item, n, ab_time, bnab_time):
     # plot the data
     plt.plot(df[headers[0]], df[item], linewidth=1, c="#cd6155", marker="o", markersize=4, zorder=1)
 
+    # add intervention/antibody time annotations
     if ab_time is not None:
         plt.text(ab_time, ymax, ' ssNAb', horizontalalignment='left', verticalalignment='center', fontsize=10)
         ax.axvline(x=ab_time, color='black', ls='dotted', lw=1, zorder=1)
@@ -63,16 +69,13 @@ def line(df, out_string, item, n, ab_time, bnab_time):
     h = 4
     f = plt.gcf()
     f.set_size_inches(w, h)
-    plt.savefig(outfile + '.png', ext='png', dpi=600, format='png', facecolor='white', bbox_inches='tight')
+    plt.savefig(outfile, ext='png', dpi=600, format='png', facecolor='white', bbox_inches='tight')
 
 
-def main(infile, outpath, name, lower, ab_time, bnab_time):
-    print(infile)
+def main(infile, outpath, lower, ab_time, bnab_time):
+
+    name = os.path.split(infile)[-1].replace("_glycan_freq.csv", "")
     outfile = os.path.join(outpath, name)
-
-    # force Arial font
-    mpl.rc('font', serif='Arial')
-    mpl.rcParams['font.family'] = 'Arial'
 
     # get the data into a dataframe
     data = pd.read_csv(infile, sep=',', header=0, parse_dates=True, na_values=[' '])
@@ -80,27 +83,24 @@ def main(infile, outpath, name, lower, ab_time, bnab_time):
     ndf = df.fillna(method='ffill')
 
     headers = list(ndf)
-    print(headers)
-
 
     # plot figure for each site with change greater than "lower" %
     upper = 100 - lower
     for item in headers[1:]:
+        # only plot sites which change
         if max(df[item]) > lower and min(df[item]) < upper:
-            n = item.replace(" ", "_")
-            line(ndf, outfile, item, n, ab_time, bnab_time)
+            glyc_site = item.replace(" ", "_")
+            line(ndf, outfile, item, glyc_site, ab_time, bnab_time)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Plots the glycan sites which show variation in frequency > 1 %')
-    parser.add_argument('-i', '--inpath', type=str,
+    parser.add_argument('-i', '--infile', type=str,
                         help='The input .csv file', required=True)
     parser.add_argument('-o', '--outpath', type=str,
                         help='The path to where the output files will be created', required=True)
-    parser.add_argument('-n', '--name', type=str,
-                        help='outfile name prefix', required=True)
-    parser.add_argument('-s', '--sensitivity', type=int, default=5,
-                        help='degree of % change (ie: to plot if site changes by 1 % use: -s 1', required=True)
+    parser.add_argument('-s', '--sensitivity', type=int, default=1,
+                        help='degree of % change (ie: to plot if site changes by 1 % use: -s 1', required=False)
     parser.add_argument('-t', '--ab_time', type=int, required=False,
                         help='The time to mask, ie: start of nAb "-t 19"')
     parser.add_argument('-b', '--bnab_time', type=int, required=False,
@@ -109,9 +109,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     infile = args.infile
     outpath = args.outpath
-    name = args.name
     sensitivity = args.sensitivity
     ab_time = args.ab_time
     bnab_time = args.bnab_time
 
-    main(infile, outpath, name, sensitivity, ab_time, bnab_time)
+    main(infile, outpath, sensitivity, ab_time, bnab_time)
