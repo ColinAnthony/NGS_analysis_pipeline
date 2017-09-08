@@ -167,7 +167,7 @@ def main(infile, outpath, name, v1, v2, c2, v3, c3, v4, c4, v5):
         outfile_string1.append(str(todo[i].upper()) + "_loop_length,")
         outfile_string1.append(str(todo[i].upper()) + "_loop_charge,")
         outfile_string1.append(str(todo[i].upper()) + "_number_of_glycans,")
-    outfile_string1.append("sequence_name")
+    outfile_string1.append("sequence_id,")
     outfile_string1.append("\n")
     outfilename_all = "".join(outfile_string1)
     with open(outfile, "w") as handle:

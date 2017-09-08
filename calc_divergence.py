@@ -114,7 +114,7 @@ def main(ref, align_file, outpath, name):
 
     # write the headings to the outfile
     with open(outfile, "w") as handle:
-        handle.write("Time,Normalised_hamming_distance_adjusted_(changes_per_100_bases),Sequence_ID\n")
+        handle.write("Time,Normalised_hamming_distance_adjusted_(changes_per_100_bases),sequence_id\n")
 
     # calculate the divergence from the reference for each sequnce
     for seq_name, seq in sorted(all_sequences.items()):

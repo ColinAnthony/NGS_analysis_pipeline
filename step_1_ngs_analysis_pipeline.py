@@ -173,7 +173,7 @@ def main(alignment, viral_load_file, parent_folder, start, script_folder, freq, 
 
             divergence_plotter(divergence_script_file, divergence_inpath, divergence_outpath, ab_time, bnab_time,
                                viral_load_file)
-
+    input("enter")
     # plot loop stats
     if run_step == 6:
         run_step += 1
