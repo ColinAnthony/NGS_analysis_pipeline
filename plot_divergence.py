@@ -26,7 +26,7 @@ def transform_df_by_vl(headers, df, vl_file, participant):
     '''
     time = headers[0]
     item = headers[1]
-    # var = headers[2] # remove
+
     test_df = df.copy(deep=True)
     test_df.drop(['sequence_id'], inplace=True, axis=1)
     ndf = test_df.groupby(time)[item].value_counts().reset_index(name='count')
@@ -102,20 +102,13 @@ def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, av_heads,
     ax.set_facecolor('white')
 
     # plot the data
-
-    # my_cmap = mpl.cm.get_cmap('Paired_r')
-    # ax.scatter(df[x_header], df[item], alpha=0.8, s=df["frequency_copies"]/400, c=df[variants], cmap=my_cmap,
-    #            edgecolor='black', lw=1, zorder=2) #marker='_', facecolor='gray', lw = 2 (**(3/5))
-
-    # ax.scatter(df[x_header], df[item], alpha=0.8, s=df["freq_viral_copies"] / 100, c='#3977db', cmap=my_cmap,
-    #            edgecolor='black', lw=1, zorder=2)
-
     if vl_file is None:
         ax.scatter(df[x_header], df[y_header], alpha=0.6, s=df["frequency"]*20, edgecolor='black', lw=0.5, zorder=2)
     else:
         ax.scatter(df[x_header], df[y_header], alpha=0.6, s=df["freq_viral_copies"]/10, edgecolor='black', lw=0.5,
                    zorder=2)
 
+    ## add legend
     # c=df[item],
     # add figure legend
     # Maj_var_patch = mlines.Line2D([], [], color='#b15a29', marker='.',
