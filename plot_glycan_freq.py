@@ -26,13 +26,13 @@ def line(df, out_string, item, glyc_site, ab_time, bnab_time):
     mpl.rc('font', serif='Arial')
     mpl.rcParams['font.family'] = 'Arial'
 
-    outfile = out_string + "_" + glyc_site + "png"
+    outfile = out_string + "_" + glyc_site + ".png"
     print("outfile is :", outfile)
 
     headers = list(df)
 
     # set axis limits
-    xmax = max(df[headers[0]]) + 10
+    xmax = int(max(df[headers[0]])) + 10
     xmin = 0
     ymax = 100
     ymin = 0

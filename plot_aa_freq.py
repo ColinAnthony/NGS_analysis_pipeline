@@ -39,7 +39,7 @@ def main(infile, outpath, ab_time, bnab_time):
         df_new = transp.transpose()
 
         if time_header not in df_new.columns:
-            df_new[time_header] = df_grp[time_header]
+            df_new[time_header] = df_grp.loc[:, time_header]
 
         my_colors = ["#C68A3B", "#7394CA", "#579F6A", "#C47BB2", "#D36C6E", "#53A7A6", "#8D909B", "#D6C463", "#A98B6D",
                      "grey"]
@@ -100,7 +100,7 @@ def main(infile, outpath, ab_time, bnab_time):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Plot amino acid frequencies for each position, from a .csv file'
-                                                 'format output from entropy_aa_freq_calculator.py.')
+                                                 'format output from calc_entropy_aa_glycan_freq.py.')
 
     parser.add_argument('-i', '--infile', type=str,
                         help='The input .csv file', required=False)

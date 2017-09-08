@@ -336,7 +336,7 @@ def transform_df_by_vl(headers, df, dcn, vl_file):
     df1 = ndf.merge(total[[time, 'total']], on=[time])
     df1["frequency"] = ndf['count'] / df1['total'] * 100
 
-    if vl_file is not None:
+    if vl_file == "None":
         vl_data = pd.read_csv(vl_file, sep=',', header=0, parse_dates=True)
         vl_df = pd.DataFrame(vl_data)
         ## get only those rows for the participant
@@ -405,9 +405,9 @@ def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, avlist, a
     #            edgecolor='black', lw=1, zorder=2)
 
     if vl_file is None:
-        ax.scatter(df[x_header], df[y_header], alpha=0.8, s=df["frequency"]/100, edgecolor='black', lw=0.5, zorder=2)
+        ax.scatter(df[x_header], df[y_header], alpha=0.6, s=df["frequency"]*20, edgecolor='black', lw=0.5, zorder=2)
     else:
-        ax.scatter(df[x_header], df[y_header], alpha=0.6, s=df["freq_viral_copies"]*400, edgecolor='black', lw=0.5,
+        ax.scatter(df[x_header], df[y_header], alpha=0.6, s=df["freq_viral_copies"]/100, edgecolor='black', lw=0.5,
                    zorder=2)
 
     # c=df[item],
@@ -419,10 +419,10 @@ def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, avlist, a
     # plt.legend(handles=[Maj_var_patch, Min_var_patch], bbox_to_anchor=(1.1, 1.05), frameon=False)
 
     # add average line
-    ax.scatter(avdf[avlist[0]], avdf[avlist[1]], alpha=0.81, s=10, c="#000000", lw=0.1, zorder=3)
+    ax.scatter(avdf[avlist[0]], avdf[avlist[1]], alpha=1, s=10, c="#000000", lw=0.1, zorder=3)
     plt.plot(avdf[avlist[0]], avdf[avlist[1]], linewidth=1.0, c="#000000", zorder=3)
     plt.fill_between(avdf[avlist[0]], avdf[avlist[1]] - avdf[avlist[2]], avdf[avlist[1]] + avdf[avlist[2]],
-                     color="#000000", alpha=0.1, zorder=3)
+                     color="#b2b5ba", alpha=1, zorder=1)
 
     #plt.title(title, fontsize=18)
     plt.ylim(ymin, ymax)
@@ -453,7 +453,7 @@ def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, avlist, a
 
 def main(infile, vl_file, name, ab_time, bnab_time, outpath):
     '''
-    :param infile: csv file with format like that produced by loop_stats.py or divergence_calculator.py
+    :param infile: csv file with format like that produced by loop_stats.py or calc_divergence.py
     :param name: string of prefix for graph files
     :param vl: (bool) transform frequency data by viral load
     :return: writes graphs to file depending on what columns are present in csv file

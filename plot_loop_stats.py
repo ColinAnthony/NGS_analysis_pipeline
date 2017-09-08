@@ -289,20 +289,19 @@ def returnvldict(patient):
         return vldict[patient]
 
 
-def transform_df_by_vl(headers, df, dcn, vl_file):
+def transform_df_by_vl(headers, item, df, dcn, vl_file):
     '''
     :param headers: column header to plot on x axis data (Time (weeks))
     :param df: dataframe with headers
     :param dcn: dictionary of Time (weeks):viral load
     :return: new data frame, with columns for freq in counts and freq in copies of virus
     '''
-
     time = headers[0]
-    item = headers[1]
-    df.drop(['Sequence_ID'], inplace=True, axis=1)
-    ndf = df.groupby(time)[item].value_counts().reset_index(name='count')
+    df_edit = df.copy(deep=True)
+    df_edit.drop(['sequence_name'], inplace=True, axis=1)
+    ndf = df_edit.groupby(time)[item].value_counts().reset_index(name='count')
 
-    total = df.groupby(time).agg({time: 'count'})
+    total = df_edit.groupby(time).agg({time: 'count'})
     total.rename(columns={time: time, time: 'total'}, inplace=True)
     total = total.reset_index()
 
@@ -330,7 +329,7 @@ def transform_df_by_vl(headers, df, dcn, vl_file):
         return df1
 
 
-def bubble(headers, item, df, outfile, ab_time, bnab_time, av_heads, avdf, vl_file):
+def plot_loop_stats(headers, item, df, outfile, ab_time, bnab_time, av_heads, avdf, vl_file):
     '''
     :param headers: x axis header
     :param item: y axis header
@@ -346,14 +345,22 @@ def bubble(headers, item, df, outfile, ab_time, bnab_time, av_heads, avdf, vl_fi
 
     xmax = int(max(df[headers]) + 10)
     xmin = 0
-    ymax = int(max(df[item]) + 1)
+    if "length" in item:
+        print("length")
+        ymax = int(max(df[item]) + 5)
+    else:
+        ymax = int(max(df[item]) + 1)
+
     if int(min(df[item])) == 0:
         ymin = 0
     else:
         ymin = int(min(df[item]) - 1)
 
-    df.sort_values(by=[item], inplace=True, ascending=True)
-    df.sort_values(by=["frequency_copies"], inplace=True, ascending=False)
+    if vl_file is not None:
+        df.sort_values(by=["frequency_copies"], inplace=True, ascending=False)
+    else:
+        df.sort_values(by=["frequency"], inplace=True, ascending=True)
+
     fig, ax = plt.subplots(1, 1)
     ax.axes.get_yaxis().set_visible(True)
     ax.spines['top'].set_visible(False)
@@ -375,15 +382,15 @@ def bubble(headers, item, df, outfile, ab_time, bnab_time, av_heads, avdf, vl_fi
 
     # plot the data
     if vl_file is None:
-        ax.scatter(df[headers], df[item], alpha=0.8, s=df["frequency"]/100, edgecolor='black', lw=0.5, zorder=2)
+        ax.scatter(df[headers], df[item], alpha=0.6, s=df["frequency"]*10, edgecolor='black', lw=0.5, zorder=2)
     else:
-        ax.scatter(df[headers], df[item], alpha=0.6, s=df["freq_viral_copies"]*400, edgecolor='black', lw=0.5, zorder=2)
+        ax.scatter(df[headers], df[item], alpha=0.6, s=df["freq_viral_copies"]/100, edgecolor='black', lw=0.5, zorder=2)
         # c=df[item],
 
     # plot the average and std
-    plt.plot(avdf[av_heads[0]], avdf['mean'], linewidth=0.1, markersize=1, c="#000000", marker="o", zorder=3)
+    plt.plot(avdf[av_heads[0]], avdf['mean'], linewidth=0.1, alpha=1, markersize=1, c="#000000", marker="o", zorder=3)
     plt.fill_between(avdf[av_heads[0]], avdf[av_heads[1]] - avdf[av_heads[2]], avdf[av_heads[1]] + avdf[av_heads[2]],
-                     color="#000000", alpha=0.1, zorder=1)
+                     color="#b2b5ba", alpha=1, zorder=1)
     # add annotations for nAb time points
     if ab_time is not None:
         plt.text(ab_time, ymax, ' ssNAb', horizontalalignment='left', verticalalignment='center', fontsize=10)
@@ -421,15 +428,16 @@ def main(infile, vl_file, name, outpath, ab_time, bnab_time):
     headers = list(df)
     d = returnvldict(name.split("_")[0])
 
-    for item in headers[1:]:
-        ndf = transform_df_by_vl(headers[0], df, d, vl_file)
-        sumavdist = df.groupby([headers[0]]).agg({item: ['mean', 'std']})
-        avs = pd.DataFrame(sumavdist.to_records())
+    for item in headers[1:-1]:
+        print(item)
+        ndf = transform_df_by_vl(headers, item, df, d, vl_file)
+        sum_av_dist = df.groupby([headers[0]]).agg({item: ['mean', 'std']})
+        avs = pd.DataFrame(sum_av_dist.to_records())
         av_heads = list(avs)
         avs.rename(columns={av_heads[0]: av_heads[0], av_heads[1]: 'mean', av_heads[2]: 'std'}, inplace=True)
-        avs.to_csv(outfile1 + "_" + str(item) + "_av_loop_stats.csv", sep=",", index=False)
+        avs.to_csv(outfile1 + "_" + str(item) + "_av.csv", sep=",", index=False)
         av_h = list(avs)
-        bubble(headers[0], item, ndf, outfile1, ab_time, bnab_time, av_h, avs, vl_file)
+        plot_loop_stats(headers[0], item, ndf, outfile1, ab_time, bnab_time, av_h, avs, vl_file)
 
     print('Done')
 

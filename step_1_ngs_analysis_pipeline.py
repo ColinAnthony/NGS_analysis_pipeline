@@ -43,9 +43,14 @@ def entropy_plotter(script_file, infiles, outpath, ssnab, bnab):
 def divergence_plotter(script_file, infiles, outpath, ssnab, bnab, vl_file):
     print("plotting divergence")
 
+    if vl_file is None:
+        vl_inflie = ''
+    else:
+        vl_inflie = '-i2 {0}'.format(vl_file)
+
     for infile in infiles:
-        name = os.path.split(infile)[-1].replace(".csv", "")
-        cmd1 = "python3 {0} -i2 {1} -i2 {2} -o {3} -n {4} -t {5} -b {6}".format(script_file, infile, vl_file,
+        name = os.path.split(infile)[-1].replace("_divergence.csv", "")
+        cmd1 = "python3 {0} -i1 {1} {2} -o {3} -n {4} -t {5} -b {6}".format(script_file, infile, vl_inflie,
                                                                                 outpath, name, ssnab, bnab)
 
         subprocess.call(cmd1, shell=True)
@@ -53,11 +58,15 @@ def divergence_plotter(script_file, infiles, outpath, ssnab, bnab, vl_file):
 
 def loop_stats_plotter(script_file, infiles, outpath, ssnab, bnab, vl_file):
     print("plotting loop_stats")
+    if vl_file is None:
+        vl_inflie = ''
+    else:
+        vl_inflie = '-i2 {0}'.format(vl_file)
 
     for infile in infiles:
-        name = os.path.split(infile)[-1].replace(".csv", "")
-        cmd1 = "python3 {0} -i1 {1} -i2 {2} -o {3} -n {4} -t {5} -b {6}".format(script_file, infile, vl_file,
-                                                                                    outpath, name, ssnab, bnab)
+        name = os.path.split(infile)[-1].replace("_loop_stats.csv", "")
+        cmd1 = "python3 {0} -i1 {1} {2} -o {3} -n {4} -t {5} -b {6}".format(script_file, infile, vl_inflie,
+                                                                            outpath, name, ssnab, bnab)
 
         subprocess.call(cmd1, shell=True)
 
@@ -85,14 +94,14 @@ def main(alignment, viral_load_file, parent_folder, start, script_folder, freq, 
     if run_step == 1:
         run_step += 1
         # calc detection level
-        detection_limit_script = os.path.join(script_folder, "variant_detection_limit.py")
+        detection_limit_script = os.path.join(script_folder, "calc_variant_detection_limit.py")
         cmd4 = "python3 {0} -i {1} -o {2} -f {3}".format(detection_limit_script, haplotypes, parent_folder, freq)
 
         subprocess.call(cmd4, shell=True)
 
         # calc aa freq, glycs, entropy
         print("calculating aa freq, glycan freq and entropy")
-        entropy_aa_calc_script = os.path.join(script_folder, "entropy_aa_freq_calculator.py")
+        entropy_aa_calc_script = os.path.join(script_folder, "calc_entropy_aa_glycan_freq.py")
         cmd1 = "python3 {0} -i {1} -o {2} -n {3} -s {4}".format(entropy_aa_calc_script, alignment, analysis_folder,
                                                                 name, start)
         subprocess.call(cmd1, shell=True)
@@ -100,7 +109,7 @@ def main(alignment, viral_load_file, parent_folder, start, script_folder, freq, 
         # calc divergence
         if longitudinal:
             print("calculating divergence")
-            divergence_script = os.path.join(script_folder, "divergence_calculator.py")
+            divergence_script = os.path.join(script_folder, "calc_divergence.py")
             divergence_folder = os.path.join(analysis_folder, "divergence")
             cmd2 = "python3 {0} -r {1} -i {2} -o {3} -n {4}".format(divergence_script, reference,
                                                                     alignment, divergence_folder, name)
@@ -110,7 +119,7 @@ def main(alignment, viral_load_file, parent_folder, start, script_folder, freq, 
         # calc loop stats
         if env:
             print("calculating v-loop statistics")
-            loop_stats_script = os.path.join(script_folder, "characterise_v_loops.py")
+            loop_stats_script = os.path.join(script_folder, "calc_v_loop_stats.py")
             loops_folder = os.path.join(analysis_folder, "loops")
             loop_arg = " ".join(["-" + str(x) for x in loops])
 
@@ -136,29 +145,29 @@ def main(alignment, viral_load_file, parent_folder, start, script_folder, freq, 
         run_step += 1
 
         glyc_script_file = os.path.join(script_folder, "plot_glycan_freq.py")
-        glyc_search = os.path.join(analysis_folder, "aa_freq", "*aa_freq.csv")
+        glyc_search = os.path.join(analysis_folder, "glycans", "*glycan_freq.csv")
         glyc_inpath = glob(glyc_search)
         glyc_infile = glyc_inpath[0]
-        glyc_outpath = os.path.join(analysis_folder, "aa_freq")
+        glyc_outpath = os.path.join(analysis_folder, "glycans")
 
         glycan_plotter(glyc_script_file, glyc_infile, glyc_outpath, ab_time, bnab_time)
 
     # plot entropy
     if run_step == 4:
         run_step += 1
-    entropy_script_file = os.path.join(script_folder, "plot_entropy.py")
-    entropy_search = os.path.join(analysis_folder, "entropy", "*.csv")
-    entropy_inpath = glob(entropy_search)
-    entropy_outpath = os.path.join(analysis_folder, "entropy")
+        entropy_script_file = os.path.join(script_folder, "plot_entropy.py")
+        entropy_search = os.path.join(analysis_folder, "entropy", "*.csv")
+        entropy_inpath = glob(entropy_search)
+        entropy_outpath = os.path.join(analysis_folder, "entropy")
 
-    entropy_plotter(entropy_script_file, entropy_inpath, entropy_outpath, ab_time, bnab_time)
+        entropy_plotter(entropy_script_file, entropy_inpath, entropy_outpath, ab_time, bnab_time)
 
     # plot divergence
     if run_step == 5:
         run_step += 1
         if longitudinal:
             divergence_script_file = os.path.join(script_folder, "plot_divergence.py")
-            divergence_search = os.path.join(analysis_folder, "divergence", "*.csv")
+            divergence_search = os.path.join(analysis_folder, "divergence", "*divergence.csv")
             divergence_inpath = glob(divergence_search)
             divergence_outpath = os.path.join(analysis_folder, "divergence")
 
@@ -170,9 +179,9 @@ def main(alignment, viral_load_file, parent_folder, start, script_folder, freq, 
         run_step += 1
         if env:
             loop_stats_script_file = os.path.join(script_folder, "plot_loop_stats.py")
-            loop_stats_search = os.path.join(analysis_folder, "loop_stats", "*.csv")
+            loop_stats_search = os.path.join(analysis_folder, "loops", "*loop_stats.csv")
             loop_stats_inpath = glob(loop_stats_search)
-            loop_stats_outpath = os.path.join(analysis_folder, "loop_stats")
+            loop_stats_outpath = os.path.join(analysis_folder, "loops")
 
             loop_stats_plotter(loop_stats_script_file, loop_stats_inpath, loop_stats_outpath, ab_time, bnab_time,
                                viral_load_file)
@@ -184,7 +193,7 @@ if __name__ == "__main__":
 
     parser.add_argument('-i1', '--infile1', default=argparse.SUPPRESS, type=str, required=True,
                         help='The name of the aligned protein fasta file, with all the time points/samples in one file')
-    parser.add_argument('-i2', '--infile2', default=argparse.SUPPRESS, type=str, required=True,
+    parser.add_argument('-i2', '--viral_load_file', default=None, type=str, required=False,
                         help='The csv file with column for: patient name, time points and viral load')
     parser.add_argument('-p', '--path', default=argparse.SUPPRESS, type=str, required=True,
                         help='The path to the gene region folder, created by running part1_ngs_processing_pipeline')
@@ -218,7 +227,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     infile1 = args.infile1
-    infile2 = args.infile2
+    viral_load_file = args.viral_load_file
     start = args.start
     path = args.path
     script_folder = args.script_folder
@@ -231,5 +240,5 @@ if __name__ == "__main__":
     loops = args.loops
     run_step = args.run_step
 
-    main(infile1, infile2, path, start, script_folder, freq, ab_time, bnab_time, reference, longitudinal, env,
+    main(infile1, viral_load_file, path, start, script_folder, freq, ab_time, bnab_time, reference, longitudinal, env,
          loops, run_step)
