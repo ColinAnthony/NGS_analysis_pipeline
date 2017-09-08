@@ -313,28 +313,19 @@ def returnvldict(patient):
         return vldict[patient]
 
 
-def rand_jitter(arr, factor):
-    '''
-    :param arr: column of values to jitter
-    :param factor: amount of jitter to add
-    :return: jittered values
-    '''
-    stdev = factor*(max(arr)-min(arr))
-    return arr + np.random.randn(len(arr)) * stdev
-
-
-def dftrans(headers, df, dcn):
+def transform_df_by_vl(headers, df, dcn, vl_file):
     '''
     :param headers: column header to plot on x axis data (Time (weeks))
     :param df: dataframe with headers
     :param dcn: dictionary of Time (weeks):viral load
+    :param vl: (bool) transform frequency data by viral load
     :return: new data frame, with columns for freq in counts and freq in copies of virus
     '''
     time = headers[0]
     item = headers[1]
     # var = headers[2] # remove
     df.drop(['Sequence_ID'], inplace=True, axis=1)
-    ndf = df.groupby(time)[item].value_counts().reset_index(name='count') # uncomment
+    ndf = df.groupby(time)[item].value_counts().reset_index(name='count')
     # ndf = df.groupby([time, item, var]).agg({item: 'count'}) #remove
     # ndf.rename(columns={time: time, item: item, var: var, item: 'count'}, inplace=True)
     # ndf.rename(columns={time: time, item: item, item: 'count'}, inplace=True)
@@ -344,46 +335,54 @@ def dftrans(headers, df, dcn):
     total = total.reset_index()
     df1 = ndf.merge(total[[time, 'total']], on=[time])
     df1["frequency"] = ndf['count'] / df1['total'] * 100
-    vl_df = pd.DataFrame.from_dict(dcn, orient='index')
-    vl_df.reset_index(inplace=True)
-    vl_df.rename(columns={'index': 'Time_(weeks)', 0: 'viral_load'}, inplace=True)
-    vl_df['Time_(weeks)'] = vl_df['Time_(weeks)'].astype(int)
-    vl_df.sort_values(by=["Time_(weeks)"], inplace=True, ascending=True)
-    df2 = df1.merge(vl_df, on=[time])
-    df2["frequency"] = df2['count'] / df2['total'] * 100
-    df2['freq_viral_copies'] = (df2["frequency"] / 100) * df2['viral_load']
-    df2.to_csv("wrangled_df.csv", sep='\t')
 
-    return df2
+    if vl_file is not None:
+        vl_data = pd.read_csv(vl_file, sep=',', header=0, parse_dates=True)
+        vl_df = pd.DataFrame(vl_data)
+        ## get only those rows for the participant
+
+        # vl_df = pd.DataFrame.from_dict(dcn, orient='index')
+        # vl_df.reset_index(inplace=True)
+        # vl_df.rename(columns={'index': 'Time_(weeks)', 0: 'viral_load'}, inplace=True)
+        # vl_df['Time_(weeks)'] = vl_df['Time_(weeks)'].astype(int)
+        # vl_df.sort_values(by=["Time_(weeks)"], inplace=True, ascending=True)
+        df2 = df1.merge(vl_df, on=[time])
+        df2["frequency"] = df2['count'] / df2['total'] * 100
+        df2['freq_viral_copies'] = (df2["frequency"] / 100) * df2['viral_load']
+        df2.to_csv("wrangled_df.csv", sep=',')
+
+        return df2
+    else:
+        return df1
 
 
-def matplotter(headers, item, df, name, ab_time, bnab_time, avlist, avdf):
+def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, avlist, avdf, vl_file):
     '''
     :param headers: x axis header
     :param item: y axis header
     :param df: dataframe containing the data
     :param name: sample name ie: CAP177
+    :param vl_file:
     :return: prints graphs to file
     '''
     x_header = headers[0]
-    # y_header = headers[item]
-    # variants = headers[2]
+    y_header = headers[1]
 
-    n = item.replace(" ", "_")
+    n = y_header.replace(" ", "_")
     if "_" in name:
         title = name.replace("_", " ")
     else:
         title = name
 
-    outname = name + "_" + n
-    print("outname is:", outname)
+    outname = name + "_" + n + ".png"
+    outfile = os.path.join(outpath, outname)
+    print("outfile is:", outfile)
 
-    # xmax = 181
-    ymax = int(max(df[item]) * 1.05)
-    xmax = int(max(df[x_header]) + 20) # max(df[x_header]) ** (1 / 3) + 20)
+    ymax = int(max(df[y_header]) * 1.05)
+    xmax = int(max(df[x_header]) + 20)
     ymin = 0
     xmin = 0
-    df.sort_values(by=[item], inplace=True, ascending=True)
+    df.sort_values(by=[y_header], inplace=True, ascending=True)
 
     # set axes
     fig, ax = plt.subplots(1, 1)
@@ -396,17 +395,22 @@ def matplotter(headers, item, df, name, ab_time, bnab_time, avlist, avdf):
     ax.get_yaxis().tick_left()
     ax.set_facecolor('white')
 
-    my_cmap = mpl.cm.get_cmap('Paired_r')
     # plot the data
 
-    # print(df["frequency_copies"])
+    # my_cmap = mpl.cm.get_cmap('Paired_r')
     # ax.scatter(df[x_header], df[item], alpha=0.8, s=df["frequency_copies"]/400, c=df[variants], cmap=my_cmap,
     #            edgecolor='black', lw=1, zorder=2) #marker='_', facecolor='gray', lw = 2 (**(3/5))
 
-    ax.scatter(df[x_header], df[item], alpha=0.8, s=df["freq_viral_copies"] / 100, c='#3977db', cmap=my_cmap,
-               edgecolor='black', lw=1, zorder=2)  # marker='_', facecolor='gray', lw = 2 (**(3/5))
+    # ax.scatter(df[x_header], df[item], alpha=0.8, s=df["freq_viral_copies"] / 100, c='#3977db', cmap=my_cmap,
+    #            edgecolor='black', lw=1, zorder=2)
 
+    if vl_file is None:
+        ax.scatter(df[x_header], df[y_header], alpha=0.8, s=df["frequency"]/100, edgecolor='black', lw=0.5, zorder=2)
+    else:
+        ax.scatter(df[x_header], df[y_header], alpha=0.6, s=df["freq_viral_copies"]*400, edgecolor='black', lw=0.5,
+                   zorder=2)
 
+    # c=df[item],
     # add figure legend
     # Maj_var_patch = mlines.Line2D([], [], color='#b15a29', marker='.',
     #                       markersize=15, label='Major Variant')
@@ -417,7 +421,7 @@ def matplotter(headers, item, df, name, ab_time, bnab_time, avlist, avdf):
     # add average line
     ax.scatter(avdf[avlist[0]], avdf[avlist[1]], alpha=0.81, s=10, c="#000000", lw=0.1, zorder=3)
     plt.plot(avdf[avlist[0]], avdf[avlist[1]], linewidth=1.0, c="#000000", zorder=3)
-    plt.fill_between(avdf[avlist[0]],avdf[avlist[1]] - avdf[avlist[2]], avdf[avlist[1]] + avdf[avlist[2]],
+    plt.fill_between(avdf[avlist[0]], avdf[avlist[1]] - avdf[avlist[2]], avdf[avlist[1]] + avdf[avlist[2]],
                      color="#000000", alpha=0.1, zorder=3)
 
     #plt.title(title, fontsize=18)
@@ -443,16 +447,18 @@ def matplotter(headers, item, df, name, ab_time, bnab_time, avlist, avdf):
     h = 4
     f = plt.gcf()
     f.set_size_inches(w, h)
-    # plt.show()
-    plt.savefig(outname+'.png', ext='png', dpi=600, format='png', facecolor='white', bbox_inches='tight')#, papertype="a0", orientation='landscape')
+
+    plt.savefig(outfile, ext='png', dpi=600, format='png', facecolor='white', bbox_inches='tight')
 
 
-def main(infile, name, ab_time, bnab_time, avdist, outpath):
+def main(infile, vl_file, name, ab_time, bnab_time, outpath):
     '''
     :param infile: csv file with format like that produced by loop_stats.py or divergence_calculator.py
     :param name: string of prefix for graph files
+    :param vl: (bool) transform frequency data by viral load
     :return: writes graphs to file depending on what columns are present in csv file
     '''
+
     mpl.rc('font', serif='Arial')
     mpl.rcParams['font.family'] = 'Arial'
     data = pd.read_csv(infile, sep=',', header=0, parse_dates=True)
@@ -461,61 +467,43 @@ def main(infile, name, ab_time, bnab_time, avdist, outpath):
     headers = list(df)
     print(headers)
     d = returnvldict(name.split("_")[0])
-    # print(d)
 
-    ndf = dftrans(headers, df, d)
-    print(ndf)
+    ndf = transform_df_by_vl(headers, df, d, vl_file)
 
-    if avdist is None:
-        sumavdist = df.groupby([headers[0]]).agg({headers[1]: ['mean', 'std']})
-        new = pd.DataFrame(sumavdist.to_records())
-        top = list(new)
-        new.rename(columns={top[0]: top[0], top[1]: 'mean', top[2]: 'std'}, inplace=True)
-        # print(new)
-        new.to_csv(name + "_av_distance.csv", sep=",", index=False)
-        outfile = os.path.join(outpath, (name + "_av_distance.csv"))
-        avd = pd.read_csv(outfile, sep=',', header=0, parse_dates=True)
-        avs = new
-        avdif = avs
-        sl = list(avs)
-    else:
-        avs = pd.read_csv(avdist, sep=',', header=0, parse_dates=True)
-        avdif = avs
-        sl = list(avs)
-    # ndf = df
+    outfile1 = os.path.join(outpath, name + "_av_distance.csv")
+    sumavdist = df.groupby([headers[0]]).agg({headers[1]: ['mean', 'std']})
+    avs = pd.DataFrame(sumavdist.to_records())
+    av_heads = list(avs)
+    avs.rename(columns={av_heads[0]: av_heads[0], av_heads[1]: 'mean', av_heads[2]: 'std'}, inplace=True)
+    avs.to_csv(outfile1 + "_" + str(headers[1]) + "_av_loop_stats.csv", sep=",", index=False)
+    av_h = list(avs)
 
-    matplotter(headers, headers[1], ndf, name, ab_time, bnab_time, sl, avs)
-    # if len(headers) > 1:
-    #     m = -2
-    # else:
-    #     m = None
-    # for item in headers[1:m]:
-    #     ndf = dftrans(headers[0], item, df, d)
-    #     matplotter(headers, item, ndf, name, ab_time, bnab_time, sl, avs)
+    divergence_plotter(headers, ndf, name, outpath, ab_time, bnab_time, av_h, avs, vl_file)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Plots loop stats from csv file (produced by loop_stats.py)',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-i', '--inpath', type=str, required=True,
+    parser.add_argument('-i1', '--infile1', type=str, required=True,
                         help='The input csv file')
+    parser.add_argument('-i2', '--infile2', type=str, default=None, required=False,
+                        help='The csv file with columns for participant, time point, viral load. Without this flag, '
+                             'scatter point sizes will be scaled by frequency only, not adjusted by viral load')
     parser.add_argument('-n', '--name', type=str, required=True,
                         help='The name of the patient: ie: "CAP177"')
     parser.add_argument('-t', '--ab_time', type=int, required=False,
                         help='The time to mask, ie: start of nAb "-t 19"')
     parser.add_argument('-b', '--bnab_time', type=int, required=False,
                         help='The second time point to mask, ie: start of bnnAb "-b 50"')
-    parser.add_argument('-a', '--avdist', type=str, required=False, default=None,
-                        help='The .csv of av dist, if you have one already, otherwise one will be made')
     parser.add_argument('-o', '--outpath', type=str, required=True,
                         help='The path to where the outfile will be written ')
 
     args = parser.parse_args()
-    infile = args.infile
+    infile1 = args.infile1
+    infile2 = args.infile2
     name = args.name
     ab_time = args.ab_time
     bnab_time = args.bnab_time
-    avdist = args.avdist
     outpath = args.outpath
 
-    main(infile, name, ab_time, bnab_time, avdist, outpath)
+    main(infile1, infile2, name, ab_time, bnab_time, outpath)

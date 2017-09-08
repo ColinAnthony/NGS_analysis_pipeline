@@ -88,10 +88,8 @@ def main(infile, outpath, ab_time, bnab_time):
 
             # set figure size
             f = plt.gcf()
-            f.set_size_inches(15.0, 10.0)
             w = 6.875
             h = 4
-            f = plt.gcf()
             f.set_size_inches(w, h)
 
             # write figure to file

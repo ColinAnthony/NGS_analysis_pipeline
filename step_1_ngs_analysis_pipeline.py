@@ -1,13 +1,12 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 from __future__ import print_function
 from __future__ import division
 import sys
 import os
 import argparse
-import collections
-from Bio import SeqIO
 import subprocess
 from glob import glob
+
 
 __author__ = 'Colin Anthony'
 
@@ -41,7 +40,29 @@ def entropy_plotter(script_file, infiles, outpath, ssnab, bnab):
         subprocess.call(cmd1, shell=True)
 
 
-def main(alignment, parent_folder, start, script_folder, freq, ab_time, bnab_time,
+def divergence_plotter(script_file, infiles, outpath, ssnab, bnab, vl_file):
+    print("plotting divergence")
+
+    for infile in infiles:
+        name = os.path.split(infile)[-1].replace(".csv", "")
+        cmd1 = "python3 {0} -i2 {1} -i2 {2} -o {3} -n {4} -t {5} -b {6}".format(script_file, infile, vl_file,
+                                                                                outpath, name, ssnab, bnab)
+
+        subprocess.call(cmd1, shell=True)
+
+
+def loop_stats_plotter(script_file, infiles, outpath, ssnab, bnab, vl_file):
+    print("plotting loop_stats")
+
+    for infile in infiles:
+        name = os.path.split(infile)[-1].replace(".csv", "")
+        cmd1 = "python3 {0} -i1 {1} -i2 {2} -o {3} -n {4} -t {5} -b {6}".format(script_file, infile, vl_file,
+                                                                                    outpath, name, ssnab, bnab)
+
+        subprocess.call(cmd1, shell=True)
+
+
+def main(alignment, viral_load_file, parent_folder, start, script_folder, freq, ab_time, bnab_time,
          reference, longitudinal, env, loops, run_step):
 
     print(alignment)
@@ -93,7 +114,8 @@ def main(alignment, parent_folder, start, script_folder, freq, ab_time, bnab_tim
             loops_folder = os.path.join(analysis_folder, "loops")
             loop_arg = " ".join(["-" + str(x) for x in loops])
 
-            cmd3 = "python3 {0} -i {1} -o {2} -n {3} {4}".format(loop_stats_script, alignment, loops_folder, name, loop_arg)
+            cmd3 = "python3 {0} -i {1} -o {2} -n {3} {4}".format(loop_stats_script, alignment, loops_folder, name,
+                                                                 loop_arg)
 
             subprocess.call(cmd3, shell=True)
 
@@ -135,22 +157,35 @@ def main(alignment, parent_folder, start, script_folder, freq, ab_time, bnab_tim
     if run_step == 5:
         run_step += 1
         if longitudinal:
-            print("")
+            divergence_script_file = os.path.join(script_folder, "plot_divergence.py")
+            divergence_search = os.path.join(analysis_folder, "divergence", "*.csv")
+            divergence_inpath = glob(divergence_search)
+            divergence_outpath = os.path.join(analysis_folder, "divergence")
+
+            divergence_plotter(divergence_script_file, divergence_inpath, divergence_outpath, ab_time, bnab_time,
+                               viral_load_file)
 
     # plot loop stats
     if run_step == 6:
         run_step += 1
         if env:
-            print("")
+            loop_stats_script_file = os.path.join(script_folder, "plot_loop_stats.py")
+            loop_stats_search = os.path.join(analysis_folder, "loop_stats", "*.csv")
+            loop_stats_inpath = glob(loop_stats_search)
+            loop_stats_outpath = os.path.join(analysis_folder, "loop_stats")
+
+            loop_stats_plotter(loop_stats_script_file, loop_stats_inpath, loop_stats_outpath, ab_time, bnab_time,
+                               viral_load_file)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='NGS data analysis pipeline',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('-i', '--infile', default=argparse.SUPPRESS, type=str, required=True,
-                        help='The name of the aligned protein fasta file, '
-                             'with all the time points/samples in one file')
+    parser.add_argument('-i1', '--infile1', default=argparse.SUPPRESS, type=str, required=True,
+                        help='The name of the aligned protein fasta file, with all the time points/samples in one file')
+    parser.add_argument('-i2', '--infile2', default=argparse.SUPPRESS, type=str, required=True,
+                        help='The csv file with column for: patient name, time points and viral load')
     parser.add_argument('-p', '--path', default=argparse.SUPPRESS, type=str, required=True,
                         help='The path to the gene region folder, created by running part1_ngs_processing_pipeline')
     parser.add_argument('-s', '--start', default=1, type=int, required=False,
@@ -182,7 +217,8 @@ if __name__ == "__main__":
                              '6 = step 6: plot loop statistics', required=False)
 
     args = parser.parse_args()
-    infile = args.infile
+    infile1 = args.infile1
+    infile2 = args.infile2
     start = args.start
     path = args.path
     script_folder = args.script_folder
@@ -195,4 +231,5 @@ if __name__ == "__main__":
     loops = args.loops
     run_step = args.run_step
 
-    main(infile, path, start, script_folder, freq, ab_time, bnab_time, reference, longitudinal, env, loops, run_step)
+    main(infile1, infile2, path, start, script_folder, freq, ab_time, bnab_time, reference, longitudinal, env,
+         loops, run_step)
