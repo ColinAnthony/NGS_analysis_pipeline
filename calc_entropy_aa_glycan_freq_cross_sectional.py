@@ -116,24 +116,24 @@ def p_freq_lists(prot_list):
     return dist_dict
 
 
-def reorder_freq_dict(master_profile, pos_num):
+def reorder_frqdict(master_profile, pos_num):
     pos_d = collections.defaultdict(dict)
-    for time, dct in master_profile.items():
+    for participant, dct in master_profile.items():
         for indx, pos in enumerate(pos_num):
             new_freq_list = []
             for resi, old_freq_list in dct.items():
                 new_freq_list.append((resi, old_freq_list[indx]))
-            pos_d[pos][time] = new_freq_list
+            pos_d[pos][participant] = new_freq_list
 
     return pos_d
 
 
-def jsd(t1, t2, pos, time):  # Jensen-shannon divergence
+def jsd(t1, t2, pos, participant):  # Jensen-shannon divergence
     '''
-    :param t1: list of AA/DNA frequencies for a given position and time point
-    :param t2: list of AA/DNA frequencies for a given position and (time point +1)
+    :param t1: list of AA/DNA frequencies for a given position and participant
+    :param t2: list of AA/DNA frequencies for a given position and (participant +1)
     :param pos: The number of the sequence position
-    :param time: the value for the time point (004)
+    :param participant: the name of the participant
     :return:
     '''
     # adapted from @author: jonathanfriedman
@@ -150,14 +150,14 @@ def jsd(t1, t2, pos, time):  # Jensen-shannon divergence
     d = float(0.5 * np.sum(d1 + d2))
     d = round(d, 6)
 
-    return (str(time), str(pos), str(d))
+    return (str(participant), str(pos), str(d))
 
 
-def shannon(t, pos, time):
+def shannon(t, pos, participant):
     '''
-    :param t: list of AA/DNA frequencies for a given position and time point
+    :param t: list of AA/DNA frequencies for a given position and participant
     :param pos: The number of the sequence position
-    :param time: the value for the time point (004)
+    :param participant: the name of the participant
     :return:
     '''
     import warnings
@@ -173,7 +173,7 @@ def shannon(t, pos, time):
     entropy = entropy * -1
     entropy = round(entropy, 6)
 
-    return (str(time), str(pos), str(entropy))
+    return (str(participant), str(pos), str(entropy))
 
 
 def glyc_finder(d, pos_num, outfile):
@@ -181,16 +181,16 @@ def glyc_finder(d, pos_num, outfile):
     :param d: dictionary of aligned protein sequences
     :param pos_num: list of HXB2 number codes for the alignment
     :param outfile: string for the outfile
-    :return: None, writes csv file of glycan frequencies over time
+    :return: None, writes csv file of glycan frequencies across participants
     '''
 
     regex_pattern = 'N[\-]*[^P\-][\-]*[TS][^P]'
     master_profile = collections.OrderedDict()
     sub_dict = collections.defaultdict(list)
     for name, seq in d.items():
-        time = name.split("_")[2][:-3]
-        sub_dict[time].append(seq)
-    for time, seq_list in sub_dict.items():
+        participant = name.split("_")[2][:-3]
+        sub_dict[participant].append(seq)
+    for participant, seq_list in sub_dict.items():
         total = len(seq_list)
         s = collections.defaultdict(int)
         s_frq = collections.OrderedDict()
@@ -203,10 +203,10 @@ def glyc_finder(d, pos_num, outfile):
 
         for site, count in s.items():
             s_frq[site] = (float(count) / total) * 100
-        master_profile[time] = s_frq
+        master_profile[participant] = s_frq
 
     all_sites_list = []
-    for time, pos_frq_d in master_profile.items():
+    for participant, pos_frq_d in master_profile.items():
         for pos, frq in pos_frq_d.items():
             if pos not in all_sites_list:
                 all_sites_list.append(pos)
@@ -214,14 +214,14 @@ def glyc_finder(d, pos_num, outfile):
     print(all_sites_list)
 
     with open(outfile, 'w') as handle:
-        handle.write("Time,")
+        handle.write("participant,")
         for i in range(len(all_sites_list)):
             handle.write(str("N{0} glycan,".format(all_sites_list[i])))
         handle.write("\n")
     s_d = collections.OrderedDict(sorted(master_profile.items()))
-    for time, pos_frq_d in s_d.items():
+    for participant, pos_frq_d in s_d.items():
         with open(outfile, 'a') as handle:
-            handle.write(str(time) + ",")
+            handle.write(str(participant) + ",")
             for position in all_sites_list:
                 try:
                     f = str(pos_frq_d[position])
@@ -249,52 +249,52 @@ def main(infile, outpath, dna, start, name):
 
     pos_num = posnumcalc(hxb2seq, start)
 
-    time_d = collections.defaultdict(list)
+    participant_d = collections.defaultdict(list)
     master_profile = collections.OrderedDict()
-    time_list = []
+    participant_list = []
     for names, seq in d.items():
-        time = str(names.split("_")[2][:-3])
-        time_list.append(time)
-        time_d[time].append(seq)
+        participant = str(names.split("_")[1])
+        participant_list.append(participant)
+        participant_d[participant].append(seq)
 
     if dna is True:
         func = d_freq_lists
     else:
         func = p_freq_lists
 
-    # calculate AA/DNA frequencies per time point
-    for time, seqlist in time_d.items():
-        master_profile[time] = func(seqlist)
+    # calculate AA/DNA frequencies per participant point
+    for participant, seqlist in participant_d.items():
+        master_profile[participant] = func(seqlist)
 
-    pos_d = reorder_freq_dict(master_profile, pos_num)
+    pos_d = reorder_frqdict(master_profile, pos_num)
     ksort = sorted(pos_d.keys())
 
     if dna is False:
-        # calc glyc sites freq over time
+        # calc glyc sites freq over participant
         glyc_finder(d, pos_num, glycan_outfile)
 
         # write out aa frequencies
         with open(aa_outfile, 'w') as handle:
-            handle.write("HXB2_position,Time,-,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,X,Y\n")
-        for pos, time_d in sorted(pos_d.items()):
-            for time, f_list in sorted(time_d.items()):
+            handle.write("HXB2_position,participant,-,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,X,Y\n")
+        for pos, participant_d in sorted(pos_d.items()):
+            for participant, f_list in sorted(participant_d.items()):
                 frq_out = []
                 for resi, frq in sorted(f_list):
                     frq_out.append(str(frq))
                 with open(aa_outfile, 'a') as handle:
-                    handle.write(str(pos) + "," + str(time) + "," + (",".join(frq_out)) + "\n")
+                    handle.write(str(pos) + "," + str(participant) + "," + (",".join(frq_out)) + "\n")
 
     with open(jsd_outfile, 'w') as handle:
-        handle.write('Time,Position,Jensen-Shannon_divergence' + "\n")
+        handle.write('participant,Position,Jensen-Shannon_divergence' + "\n")
 
     with open(se_outfile, 'w') as handle1:
-        handle1.write('Time,Position,Shannon_entropy' + "\n")
+        handle1.write('participant,Position,Shannon_entropy' + "\n")
 
     for pos in ksort:
         nksort = sorted(pos_d[pos])
-        for indx, time in enumerate(nksort):
+        for indx, participant in enumerate(nksort):
             if indx == 0:
-                # print('This must be the first time point:', time, "\nposition:", pos)
+                # print('This must be the first participant:', participant, "\nposition:", pos)
                 t1 = nksort[indx]
                 rsort_tn1 = sorted(pos_d[pos][t1])
             else:
@@ -304,8 +304,8 @@ def main(infile, outpath, dna, start, name):
             t2 = nksort[indx]
             rsort_tn2 = sorted(pos_d[pos][t2])
 
-            js_dist = jsd(rsort_tn1, rsort_tn2, pos, time)
-            s_entropy = shannon(rsort_tn2, pos, time)
+            js_dist = jsd(rsort_tn1, rsort_tn2, pos, participant)
+            s_entropy = shannon(rsort_tn2, pos, participant)
 
             outwrite = ",".join(js_dist)
             outwrite1 = ",".join(s_entropy)
@@ -324,7 +324,7 @@ if __name__ == "__main__":
                                                  'longitudinal sequence alignment',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-i', '--infile', default=argparse.SUPPRESS, type=str,
-                        help='The input fasta file, with all the time points in one file', required=True)
+                        help='The input fasta file, with all the participants in one file', required=True)
     parser.add_argument('-o', '--outpath', default=argparse.SUPPRESS, type=str,
                         help='The parent path containing the aa_freq, entropy and glycans subfolders. '
                              '(usually "/path/to/6analysis")', required=True)

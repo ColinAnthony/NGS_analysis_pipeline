@@ -74,7 +74,7 @@ def main(infile, name, limit, root, script_folder):
 
     # run haplotype script on subfiles
     split_fasta_files = os.path.join(tree_haplotype_folder, "*_sep.fasta")
-    haplotyper = os.path.join(script_folder, 'haplotyper_freq.py')
+    haplotyper = os.path.join(script_folder, 'calc_haplotype_freq.py')
     for split_fasta in glob(split_fasta_files):
         cmd2 = 'python3 {0} -i {1} -o {2}'.format(haplotyper, split_fasta, tree_haplotype_folder)
 
