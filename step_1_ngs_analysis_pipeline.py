@@ -14,8 +14,17 @@ __author__ = 'Colin Anthony'
 def aa_plotter(script_file, infile, outpath, ssnab, bnab):
 
     print("plotting amino acid frequencies")
+    if ssnab is not None:
+        ssnab_arg = "-t {0}".format(ssnab)
+    else:
+        ssnab_arg = ''
 
-    cmd1 = "python3 {0} -i {1} -o {2} -t {3} -b {4}".format(script_file, infile, outpath, ssnab, bnab)
+    if bnab is not None:
+        bnab_arg = "-b {0}".format(bnab)
+    else:
+        bnab_arg = ''
+
+    cmd1 = "python3 {0} -i {1} -o {2} {3} {4}".format(script_file, infile, outpath, ssnab_arg, bnab_arg)
 
     subprocess.call(cmd1, shell=True)
 
@@ -173,7 +182,7 @@ def main(alignment, viral_load_file, parent_folder, start, script_folder, freq, 
 
             divergence_plotter(divergence_script_file, divergence_inpath, divergence_outpath, ab_time, bnab_time,
                                viral_load_file)
-    input("enter")
+
     # plot loop stats
     if run_step == 6:
         run_step += 1
