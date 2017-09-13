@@ -17,7 +17,8 @@ __author__ = 'colin (and David Matten: david.matten@uct.ac.za)'
 
 def main(infile, outpath, ab_time, bnab_time):
     print("plotting frequency data.")
-    df = pd.read_csv(infile, sep=',', header=0)
+    data = pd.read_csv(infile, sep=',', header=0)
+    df = pd.DataFrame(data)
 
     if outpath == None:
         outpath = os.getcwd()
@@ -67,10 +68,10 @@ def main(infile, outpath, ab_time, bnab_time):
             y_headers = [x for x in list(df_new)[:-1]]
 
             num_cols = len(y_headers)
-            x_tick = list(range(1, len(names_list) + 1))
-            plt.xticks(x_tick)
-            ax.set_xticks(range(1, num_cols + 1))
-            plt.axes().set_xticklabels(names_list, rotation='vertical', fontsize=10)
+            # x_tick = list(range(1, len(names_list) + 1))
+            # plt.xticks(x_tick)
+            # ax.set_xticks(range(1, num_cols + 1))
+            # plt.axes().set_xticklabels(names_list, rotation='vertical', fontsize=10)
 
             df_new.plot(x="participant", title="Position " + str(int(pos)), color=my_colors, marker='o',
                         markersize=14, linewidth=0, zorder=3)
