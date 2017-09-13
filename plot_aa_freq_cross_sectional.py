@@ -112,9 +112,9 @@ if __name__ == "__main__":
                                                  'format output from calc_entropy_aa_glycan_freq.py.')
 
     parser.add_argument('-i', '--infile', type=str,
-                        help='The input .csv file', required=False)
+                        help='The input .csv file', required=True)
     parser.add_argument('-o', '--outpath', type=str,
-                        help='The path to where the output files will be created', required=False)
+                        help='The path to where the output files will be created', required=True)
     parser.add_argument('-t', '--ab_time', default=None, type=int, required=False,
                         help='The time to mask, ie: start of nAb "-t 19"')
     parser.add_argument('-b', '--bnab_time', default=None, type=int, required=False,
