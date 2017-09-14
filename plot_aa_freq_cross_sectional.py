@@ -17,17 +17,18 @@ __author__ = 'colin (and David Matten: david.matten@uct.ac.za)'
 
 def main(infile, outpath, ab_time, bnab_time):
     print("plotting frequency data.")
-    df = pd.read_csv(infile, sep=',', header=0)
+    data = pd.read_csv(infile, sep=',', header=0)
+    df = pd.DataFrame(data)
 
     if outpath == None:
         outpath = os.getcwd()
 
     selection_bound = 1
-    time_header = "Time"
+    x_header = "participant"
     group_col = "HXB2_position"
     y_lim_min = 0
-    y_lim_max = 100
-    xmin = 0
+    y_lim_max = 105
+    # xmin = 0
 
     for pos, df_grp in df.groupby(group_col):
 
@@ -38,15 +39,15 @@ def main(infile, outpath, ab_time, bnab_time):
         transp = transp[(transp < (100.0-selection_bound)).any(axis=1)]
         df_new = transp.transpose()
 
-        if time_header not in df_new.columns:
-            df_new[time_header] = df_grp.loc[:, time_header]
+        if x_header not in df_new.columns:
+            df_new[x_header] = df_grp.loc[:, x_header]
 
         my_colors = ["#C68A3B", "#7394CA", "#579F6A", "#C47BB2", "#D36C6E", "#53A7A6", "#8D909B", "#D6C463", "#A98B6D",
                      "grey"]
 
         # if the site is not conserved
         if len(df_new.columns) > 2:
-            xmax = max(df_new[time_header])
+            df_new["participant"] = df_new["participant"].astype(str)
 
             fig, ax = plt.subplots(1, 1)
 
@@ -54,22 +55,34 @@ def main(infile, outpath, ab_time, bnab_time):
             plt.axes(frameon=False)
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
+            # ax.spines['bottom'].set_visible(True)
+            # ax.spines['left'].set_visible(True)
             ax.get_xaxis().tick_bottom()
             ax.get_yaxis().tick_left()
 
+            # set the axis limits and axis tick intervals
+            names_list = [str(x) for x in set(df["participant"])]
+            plt.yticks(np.arange(y_lim_min, y_lim_max, 20), fontsize=10)
+            plt.ylim(0, 100.5)
+
+            y_headers = [x for x in list(df_new)[:-1]]
+
+            num_cols = len(y_headers)
+            # x_tick = list(range(1, len(names_list) + 1))
+            # plt.xticks(x_tick)
+            # ax.set_xticks(range(1, num_cols + 1))
+            # plt.axes().set_xticklabels(names_list, rotation='vertical', fontsize=10)
+
+            df_new.plot(x="participant", title="Position " + str(int(pos)), color=my_colors, marker='o',
+                        markersize=14, linewidth=0, zorder=3)
+
             # plot axis labels
-            plt.xlabel("Weeks Post Infection", fontsize=16, labelpad=10)
+            plt.xlabel("Participant", fontsize=16, labelpad=10)
             plt.ylabel("Frequenecy", fontsize=16, labelpad=12)
             plt.title("Position " + str(int(pos)), ha='center', fontsize=20)
-
-            # set the axis limits and axis tick intervals
-            plt.xticks(list(range(xmin, int(xmax), 20)), fontsize=10)
-            plt.yticks(np.arange(y_lim_min, y_lim_max, 20), fontsize=10)
-            plt.ylim(0, 100.05)
-
-            # plot the aa freq for the given position
-            df_new.plot(x=time_header, title="Position " + str(int(pos)), color=my_colors, marker='o',
-                        markersize=5, linewidth=2, zorder=3)
+            # add figure legend
+            plt.legend(bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0., borderpad=1, labelspacing=0.5,
+                       handletextpad=0)
 
             # plot the antibody annotations
             if ab_time is not None:
@@ -81,10 +94,6 @@ def main(infile, outpath, ab_time, bnab_time):
                 plt.text(bnab_time, y_lim_max, ' bNAb', horizontalalignment='left', verticalalignment='center',
                          fontsize=10)
                 plt.axvline(x=bnab_time, color='black', ls='dotted', lw=1, zorder=1)
-
-            # add figure legend
-            plt.legend(bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0., borderpad=1, labelspacing=0.5,
-                       handletextpad=0)
 
             # set figure size
             f = plt.gcf()
