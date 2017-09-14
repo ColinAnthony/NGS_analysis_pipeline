@@ -94,13 +94,14 @@ def main(infile, outpath, lower, ab_time, bnab_time):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Plots the glycan sites which show variation in frequency > 1 %')
+    parser = argparse.ArgumentParser(description='Plots the glycan sites which show variation in frequency > 1 percent')
+
     parser.add_argument('-i', '--infile', type=str,
                         help='The input .csv file', required=True)
     parser.add_argument('-o', '--outpath', type=str,
                         help='The path to where the output files will be created', required=True)
     parser.add_argument('-s', '--sensitivity', type=int, default=1,
-                        help='degree of % change (ie: to plot if site changes by 1 % use: -s 1', required=False)
+                        help='the percent change (ie: to plot if site changes by 1 percent use: -s 1', required=False)
     parser.add_argument('-t', '--ab_time', type=int, required=False,
                         help='The time to mask, ie: start of nAb "-t 19"')
     parser.add_argument('-b', '--bnab_time', type=int, required=False,
