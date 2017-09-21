@@ -11,11 +11,14 @@ import matplotlib as mpl
 from matplotlib.ticker import AutoMinorLocator
 import matplotlib.cm as cm
 
+import seaborn as sns
 
 __author__ = 'colin (and David Matten: david.matten@uct.ac.za)'
 
 
 def main(infile, outpath, ab_time, bnab_time):
+    sns.set(style="whitegrid", palette="muted")
+
     print("plotting frequency data.")
     data = pd.read_csv(infile, sep=',', header=0)
     df = pd.DataFrame(data)
@@ -72,6 +75,14 @@ def main(infile, outpath, ab_time, bnab_time):
             # plt.xticks(x_tick)
             # ax.set_xticks(range(1, num_cols + 1))
             # plt.axes().set_xticklabels(names_list, rotation='vertical', fontsize=10)
+
+
+            # if pos == 428:
+            #     rawr = pd.melt(df_new, id_vars=['participant'], value_vars=['E', 'K'])
+            #     print(rawr)
+            # sns.swarmplot(x="participant", y="value", hue="variable", data=rawr)
+            # plt.show()
+            # r = input("next?")
 
             df_new.plot(x="participant", title="Position " + str(int(pos)), color=my_colors, marker='o',
                         markersize=14, linewidth=0, zorder=3)
