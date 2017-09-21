@@ -11,13 +11,13 @@ import matplotlib as mpl
 from matplotlib.ticker import AutoMinorLocator
 import matplotlib.cm as cm
 
-import seaborn as sns
+#import seaborn as sns
 
 __author__ = 'colin (and David Matten: david.matten@uct.ac.za)'
 
 
 def main(infile, outpath, ab_time, bnab_time):
-    sns.set(style="whitegrid", palette="muted")
+#    sns.set(style="whitegrid", palette="muted")
 
     print("plotting frequency data.")
     data = pd.read_csv(infile, sep=',', header=0)
