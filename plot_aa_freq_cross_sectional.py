@@ -7,16 +7,14 @@ import argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-from matplotlib.ticker import AutoMinorLocator
-import matplotlib.cm as cm
-
+import matplotlib.patches as mpatches
+import seaborn as sns
 
 __author__ = 'colin (and David Matten: david.matten@uct.ac.za)'
 
 
 def main(infile, outpath, ab_time, bnab_time):
-    print("plotting frequency data.")
+
     data = pd.read_csv(infile, sep=',', header=0)
     df = pd.DataFrame(data)
 
@@ -31,7 +29,7 @@ def main(infile, outpath, ab_time, bnab_time):
     # xmin = 0
 
     for pos, df_grp in df.groupby(group_col):
-
+        print("pos: {}".format(pos))
         # manipulate the dataframe
         df_grp.drop(group_col, axis=1, inplace=True)
         transp = df_grp.transpose()
@@ -45,44 +43,87 @@ def main(infile, outpath, ab_time, bnab_time):
         my_colors = ["#C68A3B", "#7394CA", "#579F6A", "#C47BB2", "#D36C6E", "#53A7A6", "#8D909B", "#D6C463", "#A98B6D",
                      "grey"]
 
+        aa_dict = {'A': '#C8C8C8',
+                   'R': '#145AFF',
+                   'N': '#00DCDC',
+                   'D': '#E60A0A',
+                   'C': '#E6E600',
+                   'Q': '#00DCDC',
+                   'E': '#E60A0A',
+                   'G': '#EBEBEB',
+                   'H': '#8282D2',
+                   'I': '#0F820F',
+                   'L': '#0F820F',
+                   'K': '#145AFF',
+                   'M': '#E6E600',
+                   'F': '#3232AA',
+                   'P': '#DC9682',
+                   'S': '#FA9600',
+                   'T': '#FA9600',
+                   'W': '#B45AB4',
+                   'Y': '#3232AA',
+                   'V': '#0F820F',
+                   '-': '#707070',
+                   'X': '#000000'}
+
+        # aa_dict = {
+        #         'A': '#99ff99',
+        #         'R': '#0000ff',
+        #         'N': '#ff6666',
+        #         'D': '#660000',
+        #         'C': '#ffff66',
+        #         'Q': '#ff3333',
+        #         'E': '#660000',
+        #         'G': '#000000',
+        #         'H': '#6666ff',
+        #         'I': '#006600',
+        #         'L': '#336633',
+        #         'K': '#3333cc',
+        #         'M': '#cc9933',
+        #         'F': '#666633',
+        #         'P': '#666666',
+        #         'S': '#ff6633',
+        #         'T': '#cc3300',
+        #         'W': '#666600',
+        #         'Y': '#996633',
+        #         'V': '#ff99ff',
+        #         '-': '#707070',
+        #         'X': '#ff00ff'}
+
         # if the site is not conserved
         if len(df_new.columns) > 2:
-            df_new["participant"] = df_new["participant"].astype(str)
 
-            fig, ax = plt.subplots(1, 1)
-
-            plt.axis('off')
-            plt.axes(frameon=False)
+            fig, ax = plt.subplots()
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
-            # ax.spines['bottom'].set_visible(True)
-            # ax.spines['left'].set_visible(True)
             ax.get_xaxis().tick_bottom()
             ax.get_yaxis().tick_left()
 
             # set the axis limits and axis tick intervals
-            names_list = [str(x) for x in set(df["participant"])]
             plt.yticks(np.arange(y_lim_min, y_lim_max, 20), fontsize=10)
-            plt.ylim(0, 100.5)
+            plt.ylim(0, y_lim_max)
+            plt.xticks(rotation=90)
 
-            y_headers = [x for x in list(df_new)[:-1]]
+            headers = list(df_new)
+            melt_values = headers[:-1]
+            plot_df = pd.melt(df_new, id_vars=['participant'], value_vars=melt_values)
+            plot_df.rename(columns={"variable": "residue"}, inplace=True)
 
-            num_cols = len(y_headers)
-            # x_tick = list(range(1, len(names_list) + 1))
-            # plt.xticks(x_tick)
-            # ax.set_xticks(range(1, num_cols + 1))
-            # plt.axes().set_xticklabels(names_list, rotation='vertical', fontsize=10)
-
-            df_new.plot(x="participant", title="Position " + str(int(pos)), color=my_colors, marker='o',
-                        markersize=14, linewidth=0, zorder=3)
+            sns.set_style("white")
+            sns.set_style("ticks")
+            sns.axes_style("white")
+            # if pos == 454 or pos == 472 or pos == 480:
+            #print(plot_df)
+            sns.stripplot(x="participant", y="value", data=plot_df, size=20, hue="residue", palette=my_colors, alpha=0.80)
+            sns.despine(left=False, bottom=False)
 
             # plot axis labels
             plt.xlabel("Participant", fontsize=16, labelpad=10)
-            plt.ylabel("Frequenecy", fontsize=16, labelpad=12)
+            plt.ylabel("Frequency (%)", fontsize=16, labelpad=12)
             plt.title("Position " + str(int(pos)), ha='center', fontsize=20)
+
             # add figure legend
-            plt.legend(bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0., borderpad=1, labelspacing=0.5,
-                       handletextpad=0)
+            plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0)
 
             # plot the antibody annotations
             if ab_time is not None:
@@ -102,7 +143,7 @@ def main(infile, outpath, ab_time, bnab_time):
             f.set_size_inches(w, h)
 
             # write figure to file
-            out_fn = os.path.join(outpath, "Site_" + str(int(pos)) + "_rel.png")
+            out_fn = os.path.join(outpath, "Site_" + str(pos) + "_rel.png")
             plt.savefig(out_fn, ext='png', dpi=600, format='png', facecolor='white', bbox_inches='tight')
             plt.close('all')
 
