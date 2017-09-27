@@ -253,7 +253,7 @@ def main(infile, outpath, dna, start, name):
     master_profile = collections.OrderedDict()
     participant_list = []
     for names, seq in d.items():
-        participant = str(names.split("_")[1])
+        participant = str(names.split("_")[0])
         participant_list.append(participant)
         participant_d[participant].append(seq)
 

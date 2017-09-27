@@ -13,6 +13,7 @@ import numpy as np
 import matplotlib.patches as mpatches
 import matplotlib.lines as mlines
 from pprint import pprint
+import collections
 
 
 __author__ = 'colin'
@@ -70,28 +71,28 @@ def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, av_heads,
     :param vl_file:
     :return: prints graphs to file
     '''
-    x_header = headers[0]
-    y_header = headers[1]
-
-    n = y_header.replace(" ", "_")
-    if "_" in name:
-        title = name.replace("_", " ")
-    else:
-        title = name
-
-    outname = name + "_" + n + ".png"
+    outname = name + "_divergence.png"
     outfile = os.path.join(outpath, outname)
     print("outfile is:", outfile)
 
-    ymax = int(max(df[y_header]) * 1.05)
-    xmax = int(max(df[x_header]) + 20)
+    x_header = headers[0]
+    y_header = headers[1]
+
+    participants_list = list(set(df[x_header]))
+    num_participants = len(participants_list)
+    participant_d = {participants: n for n, participants in enumerate(participants_list)}
+    df["plot_x"] = df[x_header].map(participant_d)
+
+
+    title = name
+    max_divergence_series = df.groupby(x_header)[y_header].max()
+    df['colour'] = df[x_header].map(max_divergence_series)
+
+    ymax = int(max(df[y_header]) * 1.15)
     ymin = 0
-    xmin = 0
-    # df.sort_values(by=[y_header], inplace=True, ascending=True)
-    if vl_file is not None:
-        df.sort_values(by=["freq_viral_copies"], inplace=True, ascending=False)
-    else:
-        df.sort_values(by=["frequency"], inplace=True, ascending=True)
+
+    df.sort_values(by=["colour"], inplace=True, ascending=True)
+
     # set axes
     fig, ax = plt.subplots(1, 1)
     ax.axes.get_yaxis().set_visible(True)
@@ -103,46 +104,19 @@ def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, av_heads,
     ax.get_yaxis().tick_left()
     ax.set_facecolor('white')
 
+    x = df["plot_x"]
+    x_ticks = df[x_header]
+    plt.xticks(x, x_ticks, rotation=90)
+    plt.ylim(ymin, ymax)
+
     # plot the data
     if vl_file is None:
-        ax.scatter(df[x_header], df[y_header], alpha=0.6, s=df["frequency"]*20, edgecolor='black', lw=0.5, zorder=2)
+        ax.scatter(df["plot_x"], df[y_header], alpha=0.6, s=df["frequency"]*10, c=df["colour"], edgecolor='black', lw=0.5, zorder=2)
     else:
-        ax.scatter(df[x_header], df[y_header], alpha=0.6, s=df["freq_viral_copies"]/10, edgecolor='black', lw=0.5,
-                   zorder=2)
+        ax.scatter(df["plot_x"], df[y_header], alpha=0.6, s=df["freq_viral_copies"]/10, c=df["colour"], edgecolor='black', lw=0.5, zorder=2)
 
-    ## add legend
-    # c=df[item],
-    # add figure legend
-    # Maj_var_patch = mlines.Line2D([], [], color='#b15a29', marker='.',
-    #                       markersize=15, label='Major Variant')
-    # Min_var_patch = mlines.Line2D([], [], color='#97b9cc', marker='.',
-    #                               markersize=15, label='Minor Variant')
-    # plt.legend(handles=[Maj_var_patch, Min_var_patch], bbox_to_anchor=(1.1, 1.05), frameon=False)
-
-    # add average line
-    ax.scatter(av_df[av_heads[0]], av_df[av_heads[1]], alpha=1, s=10, c="#000000", lw=0.1, zorder=3)
-    plt.plot(av_df[av_heads[0]], av_df[av_heads[1]], linewidth=1.0, c="#000000", zorder=3)
-    plt.fill_between(av_df[av_heads[0]], av_df[av_heads[1]] - av_df[av_heads[2]], av_df[av_heads[1]] + av_df[av_heads[2]],
-                     color="#b2b5ba", alpha=1, zorder=1)
-
-    #plt.title(title, fontsize=18)
-    plt.ylim(ymin, ymax)
-    plt.xlim(xmin, xmax)
-    plt.yticks(list([x / 10 for x in range(int(ymin * 10), int(ymax * 10), 20)]), fontsize=14)
-    ax.get_yaxis().set_minor_locator(mpl.ticker.MultipleLocator(base=5))
-
-    plt.ylabel("Divergence (%)", fontsize=24, labelpad=14)
+    plt.ylabel("Divergence from major variant (%)", fontsize=24, labelpad=14)
     plt.xlabel("Weeks post infection", fontsize=24, labelpad=12)
-    plt.xticks(list(range(xmin,xmax, 20)), fontsize=14)
-
-    # add annotations for nAb time points
-    if ab_time is not None:
-        plt.text(ab_time, ymax, ' ssNAb', horizontalalignment='left', verticalalignment='center', fontsize=10)
-        ax.axvline(x=ab_time, color='black', ls='dotted', lw=1, zorder=1)
-
-    if bnab_time is not None:
-        plt.text(bnab_time, ymax, ' bNAb', horizontalalignment='left', verticalalignment='center', fontsize=10)
-        plt.axvline(x=bnab_time, color='black', ls='dotted', lw=1, zorder=1)
 
     w = 6.875
     h = 4
@@ -165,6 +139,7 @@ def main(infile, vl_file, name, ab_time, bnab_time, outpath):
     data = pd.read_csv(infile, sep=',', header=0, parse_dates=True)
     df = pd.DataFrame(data)
     df.fillna(method='ffill', inplace=True)
+
     headers = list(df)
     participant = name.split("_")[0]
 
