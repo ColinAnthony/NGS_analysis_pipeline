@@ -69,27 +69,23 @@ def customdist(s1, s2):
 def normcustomdist(s1, s2):
 
     if len(s1) != len(s2):
-        print("sequences must be the same length as the reference sequence")
+        print("sequences must be the same length")
         sys.exit()
 
-    d = sum(ch1 != ch2 for ch1, ch2 in zip(s1, s2))
-    gappen = 0
-    for i in range(len(s1)):
-        if s1[i] == "-" and s1[i] !=s2[i]:
-            gappen += 1
-
-    count = 0
+    dist = 0
+    for c1, c2 in zip(s1, s2):
+        if c1 != c2:
+            dist += 1
+    diff = 0
     for i in range(len(s1)-1):
-        if s1[i] == "-" and s2[i] != "-":
-            if s1[i+1] == "-" and s2[i] != "-":
-                i = i + 1
-                continue
-            else:
-                count += 1
+        if s1[i] != s2[i]:
+            if (s1[i] == "-" and s1[i+1] == "-" and s2[i+1] != "-") \
+                    or (s2[i] == "-" and s2[i+1] == "-" and s1[i+1] != "-"):
+                diff += 1
 
-    gapfactor = gappen - count
-    dist = d - gapfactor
+    dist = dist-diff
     normdist = dist / len(s1)
+
     return normdist
 
 
