@@ -49,9 +49,9 @@ def main(infile, name, limit, root, script_folder, dna_or_protein):
     print(infile)
 
 
-
     # glob the 5haplotype folder for all hap.fasta files
-    path_aln, name_aln = os.path.split(infile)[0]
+    infile = os.path.abspath(infile)
+    path_aln, name_aln = os.path.split(infile)
     parent_path = os.path.split(path_aln)[0]
     tree_haplotype_folder = os.path.join(parent_path, "5haplotype", "tree_haplotype")
     os.makedirs(tree_haplotype_folder)
@@ -147,7 +147,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     infile = args.infile
-    outpath = args.outpath
+    #outpath = args.outpath
     name = args.name
     limit = args.limit
     root = args.root
