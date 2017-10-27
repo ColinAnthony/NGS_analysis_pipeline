@@ -45,7 +45,7 @@ def gethxb2(dict):
     return str(hxb2_key), str(hxb2_seq)
 
 
-def main(infile, name, limit, root, script_folder):
+def main(infile, name, limit, root, script_folder, dna_or_protein):
     print(infile)
 
 
@@ -114,7 +114,10 @@ def main(infile, name, limit, root, script_folder):
     # build the tree
     tree_infile = top_hap_outfile
     tree_outfile = tree_infile.replace(".fasta", "nwk")
-    cmd = "fasttree -nt -gtr {0} > {1}".format(tree_infile, tree_outfile)
+    if dna_or_protein == "dna":
+        cmd = "fasttree -nt -gtr {0} > {1}".format(tree_infile, tree_outfile)
+    else:
+        cmd = "fasttree -gtr {0} > {1}".format(tree_infile, tree_outfile)
     subprocess.call(cmd, shell=True)
     tree_fig_name = name + "_tree"
     tree_script = os.path.join(script_folder, "bubble_tree.py")
@@ -139,6 +142,8 @@ if __name__ == "__main__":
                         help='fasta file containing the sequence to use if an external root sequence is required')
     parser.add_argument('-sf', '--script_folder', default=argparse.SUPPRESS, type=str, required=True,
                         help='the path to the folder containing the pipeline scripts')
+    parser.add_argument('-dna_or_protein', '--dna_or_protein', default='dna', type=str, required=False,
+                        choices=['dna', 'protein'], help='either dna or protein alignment')
 
     args = parser.parse_args()
     infile = args.infile
@@ -147,5 +152,6 @@ if __name__ == "__main__":
     limit = args.limit
     root = args.root
     script_folder = args.script_folder
+    dna_or_protein = args.dna_or_protein
 
-    main(infile, name, limit, root, script_folder)
+    main(infile, name, limit, root, script_folder, dna_or_protein)
