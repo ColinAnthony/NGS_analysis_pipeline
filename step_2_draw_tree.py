@@ -114,7 +114,7 @@ def main(infile, name, limit, root, script_folder):
     # build the tree
     tree_infile = top_hap_outfile
     tree_outfile = tree_infile.replace(".fasta", "nwk")
-    cmd = "fasttree {0} > {1}".format(tree_infile, tree_outfile)
+    cmd = "fasttree -nt -gtr {0} > {1}".format(tree_infile, tree_outfile)
     subprocess.call(cmd, shell=True)
     tree_fig_name = name + "_tree"
     tree_script = os.path.join(script_folder, "bubble_tree.py")
