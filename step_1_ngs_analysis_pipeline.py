@@ -14,26 +14,33 @@ __author__ = 'Colin Anthony'
 def aa_plotter(script_file, infile, outpath, ssnab, bnab):
 
     print("plotting amino acid frequencies")
-    if ssnab is not None:
-        ssnab_arg = "-t {0}".format(ssnab)
+    if bnab is None and ssnab is not None:
+        ab_markers = '-t {0}'.format(ssnab)
+    elif bnab is not None and ssnab is None:
+        ab_markers = '-b {0}'.format(bnab)
+    elif bnab is not None and ssnab is not None:
+        ab_markers = '-t {0} -b {1}'.format(ssnab, bnab)
     else:
-        ssnab_arg = ''
+        ab_markers = ''
 
-    if bnab is not None:
-        bnab_arg = "-b {0}".format(bnab)
-    else:
-        bnab_arg = ''
-
-    cmd1 = "python3 {0} -i {1} -o {2} {3} {4}".format(script_file, infile, outpath, ssnab_arg, bnab_arg)
+    cmd1 = "python3 {0} -i {1} -o {2} {3}".format(script_file, infile, outpath, ab_markers)
 
     subprocess.call(cmd1, shell=True)
 
 
 def glycan_plotter(script_file, infile, outpath, ssnab, bnab):
 
-    print("plotting glycan frequencies"
-          )
-    cmd1 = "python3 {0} -i {1} -o {2} -t {3} -b {4}".format(script_file, infile, outpath, ssnab, bnab)
+    print("plotting glycan frequencies")
+    if bnab is None and ssnab is not None:
+        ab_markers = '-t {0}'.format(ssnab)
+    elif bnab is not None and ssnab is None:
+        ab_markers = '-b {0}'.format(bnab)
+    elif bnab is not None and ssnab is not None:
+        ab_markers = '-t {0} -b {1}'.format(ssnab, bnab)
+    else:
+        ab_markers = ''
+
+    cmd1 = "python3 {0} -i {1} -o {2} {3}".format(script_file, infile, outpath, ab_markers)
 
     subprocess.call(cmd1, shell=True)
 
@@ -41,10 +48,19 @@ def glycan_plotter(script_file, infile, outpath, ssnab, bnab):
 def entropy_plotter(script_file, infiles, outpath, ssnab, bnab):
 
     print("plotting entropy heatmaps")
+    if bnab is None and ssnab is not None:
+        ab_markers = '-t {0}'.format(ssnab)
+    elif bnab is not None and ssnab is None:
+        ab_markers = '-b {0}'.format(bnab)
+    elif bnab is not None and ssnab is not None:
+        ab_markers = '-t {0} -b {1}'.format(ssnab, bnab)
+    else:
+        ab_markers = ''
 
     for infile in infiles:
         name = os.path.split(infile)[-1].replace(".csv", "")
-        cmd1 = "python3 {0} -i {1} -o {2} -n {3} -t {4} -b {5}".format(script_file, infile, outpath, name, ssnab, bnab)
+
+        cmd1 = "python3 {0} -i {1} -o {2} -n {3} {4}".format(script_file, infile, outpath, name, ab_markers)
 
         subprocess.call(cmd1, shell=True)
 
@@ -57,10 +73,19 @@ def divergence_plotter(script_file, infiles, outpath, ssnab, bnab, vl_file):
     else:
         vl_inflie = '-i2 {0}'.format(vl_file)
 
+    if bnab is None and ssnab is not None:
+        ab_markers = '-t {0}'.format(ssnab)
+    elif bnab is not None and ssnab is None:
+        ab_markers = '-b {0}'.format(bnab)
+    elif bnab is not None and ssnab is not None:
+        ab_markers = '-t {0} -b {1}'.format(ssnab, bnab)
+    else:
+        ab_markers = ''
+
     for infile in infiles:
         name = os.path.split(infile)[-1].replace("_divergence.csv", "")
-        cmd1 = "python3 {0} -i1 {1} {2} -o {3} -n {4} -t {5} -b {6}".format(script_file, infile, vl_inflie,
-                                                                                outpath, name, ssnab, bnab)
+        cmd1 = "python3 {0} -i1 {1} {2} -o {3} -n {4} {5}".format(script_file, infile, vl_inflie,
+                                                                  outpath, name, ab_markers)
 
         subprocess.call(cmd1, shell=True)
 
@@ -71,11 +96,19 @@ def loop_stats_plotter(script_file, infiles, outpath, ssnab, bnab, vl_file):
         vl_inflie = ''
     else:
         vl_inflie = '-i2 {0}'.format(vl_file)
+    if bnab is None and ssnab is not None:
+        ab_markers = '-t {0}'.format(ssnab)
+    elif bnab is not None and ssnab is None:
+        ab_markers = '-b {0}'.format(bnab)
+    elif bnab is not None and ssnab is not None:
+        ab_markers = '-t {0} -b {1}'.format(ssnab, bnab)
+    else:
+        ab_markers = ''
 
     for infile in infiles:
         name = os.path.split(infile)[-1].replace("_loop_stats.csv", "")
-        cmd1 = "python3 {0} -i1 {1} {2} -o {3} -n {4} -t {5} -b {6}".format(script_file, infile, vl_inflie,
-                                                                            outpath, name, ssnab, bnab)
+        cmd1 = "python3 {0} -i1 {1} {2} -o {3} -n {4} {5}".format(script_file, infile, vl_inflie,
+                                                                  outpath, name, ab_markers)
 
         subprocess.call(cmd1, shell=True)
 

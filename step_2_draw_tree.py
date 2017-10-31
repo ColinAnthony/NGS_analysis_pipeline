@@ -49,19 +49,20 @@ def main(infile, name, limit, root, script_folder):
     print(infile)
 
 
+    # take a curated alignment
 
     # glob the 5haplotype folder for all hap.fasta files
-    path_aln, name_aln = os.path.split(infile)[0]
+    path_aln, name_aln = os.path.split(infile)
     parent_path = os.path.split(path_aln)[0]
     tree_haplotype_folder = os.path.join(parent_path, "5haplotype", "tree_haplotype")
-    os.makedirs(tree_haplotype_folder)
+    os.makedirs(tree_haplotype_folder, exist_ok=True)
     top_hap_outfile = os.path.join(tree_haplotype_folder, "{0}_top_{1}.fasta".format(name, limit))
     tree_analysis_folder = os.path.join(parent_path, "6analysis", "tree")
 
 
     # split the aligned file into subfiles
     aln_d = fasta_to_dct(infile)
-    hxb2_key, hxb2_seq = gethxb2(aln_d)
+    # hxb2_key, hxb2_seq = gethxb2(aln_d)
     tmp_file = "No_hxb2_align.fasta"
     with open(tmp_file, 'w') as handle:
         for name, seq in aln_d.items():
@@ -142,7 +143,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     infile = args.infile
-    outpath = args.outpath
+    # outpath = args.outpath
     name = args.name
     limit = args.limit
     root = args.root

@@ -37,10 +37,12 @@ def main(infile, outpath, field):
     alignment = SeqIO.parse(infile, "fasta")
     d = collections.defaultdict(list)
     hxb2_key, hxb2_seq = gethxb2(d)
-    del d[hxb2_key]
-
-    # account for python zero indexing
-    field -= 1
+    print(hxb2_key)
+    if hxb2_key is None:
+        print("no hxb2 to remove")
+    elif hxb2_key is not None:
+        print("removing hxb2")
+        del d[hxb2_key]
 
     # get unique field(s) for splitting by time point
     for sequence_obj in alignment:

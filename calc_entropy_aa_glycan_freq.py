@@ -9,15 +9,17 @@ import os
 import regex
 import pandas as pd
 import sys
-__author__ = 'colin.anthony001@gmail.com'
+
+
+__author__ = 'colin.anthony'
 
 
 
 def fasta_to_dct(fn):
-    '''
+    """
     :param fn: a fasta file
     :return: a dictionary
-    '''
+    """
     dct = collections.OrderedDict()
     for seq_record in SeqIO.parse(open(fn), "fasta"):
         dct[seq_record.description.replace(" ", "_")] = str(seq_record.seq).replace("~", "-").upper()
@@ -25,10 +27,10 @@ def fasta_to_dct(fn):
 
 
 def gethxb2(dict):
-    '''
+    """
     :param dict: a dictionary of your aligned input sequences. Must contain HXB2, with HXB2 in the header
     :return: the HXB2 sequence as a string
-    '''
+    """
     found = False
     hxb2_seq = None
     hxb2_key = None
@@ -129,13 +131,13 @@ def reorder_freq_dict(master_profile, pos_num):
 
 
 def jsd(t1, t2, pos, time):  # Jensen-shannon divergence
-    '''
+    """
     :param t1: list of AA/DNA frequencies for a given position and time point
     :param t2: list of AA/DNA frequencies for a given position and (time point +1)
     :param pos: The number of the sequence position
     :param time: the value for the time point (004)
     :return:
-    '''
+    """
     # adapted from @author: jonathanfriedman
     import warnings
     warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -154,12 +156,12 @@ def jsd(t1, t2, pos, time):  # Jensen-shannon divergence
 
 
 def shannon(t, pos, time):
-    '''
+    """
     :param t: list of AA/DNA frequencies for a given position and time point
     :param pos: The number of the sequence position
     :param time: the value for the time point (004)
     :return:
-    '''
+    """
     import warnings
     warnings.filterwarnings("ignore", category=RuntimeWarning)
     entropy = 0.0
@@ -177,12 +179,12 @@ def shannon(t, pos, time):
 
 
 def glyc_finder(d, pos_num, outfile):
-    '''
+    """
     :param d: dictionary of aligned protein sequences
     :param pos_num: list of HXB2 number codes for the alignment
     :param outfile: string for the outfile
     :return: None, writes csv file of glycan frequencies over time
-    '''
+    """
 
     regex_pattern = 'N[\-]*[^P\-][\-]*[TS][^P]'
     master_profile = collections.OrderedDict()

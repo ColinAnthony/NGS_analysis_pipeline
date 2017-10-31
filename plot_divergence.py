@@ -89,7 +89,7 @@ def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, av_heads,
     xmin = 0
     # df.sort_values(by=[y_header], inplace=True, ascending=True)
     if vl_file is not None:
-        df.sort_values(by=["freq_viral_copies"], inplace=True, ascending=False)
+        df.sort_values(by=["freq_viral_copies"], inplace=True, ascending=True)
     else:
         df.sort_values(by=["frequency"], inplace=True, ascending=True)
     # set axes
