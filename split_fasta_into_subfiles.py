@@ -43,19 +43,20 @@ def fasta_to_dct(file_name):
     return dct
 
 
-def gethxb2(dict):
-    '''
-    :param dict: a dictionary of your aligned input sequences. Must contain HXB2, with HXB2 in the header
+def gethxb2(dictionary):
+    """
+    finds HXB2 in the dictionary keys and returns the full name and the sequence
+    :param dictionary: a dictionary of your aligned input sequences. Must contain HXB2, with HXB2 in the header
     :return: the HXB2 sequence as a string
-    '''
+    """
     found = False
     hxb2_seq = None
     hxb2_key = None
-    for k in dict.keys():
+    for k in dictionary.keys():
         if "HXB2" in k.upper():
             found = True
             hxb2_key = k
-            hxb2_seq = dict[k]
+            hxb2_seq = dictionary[k]
             print("Found hxb2 ref. seq. Its full name is: ", hxb2_key)
             break
     if not found:
@@ -77,7 +78,7 @@ def main(infile, outpath, field):
         print("removing hxb2")
         del alignment_d[hxb2_key]
 
-    #adjust the field value for python zero indexing
+    # adjust the field value for python zero indexing
     adjust_field = field + 1
 
     # sort time-point/sample sequence entries into dictionaries by the specified unique field
@@ -99,7 +100,8 @@ def main(infile, outpath, field):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Plots loop stats from csv file (produced by loop_stats.py)',
+    parser = argparse.ArgumentParser(description='Splits a fasta file into multiple fasta files, '
+                                                 'based on a unique field in the fasta headers)',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-i', '--infile', type=str, required=True,
                         help='The input fasta file')
