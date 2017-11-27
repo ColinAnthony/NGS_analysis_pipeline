@@ -146,14 +146,14 @@ def main(alignment, viral_load_file, parent_folder, start, script_folder, freq, 
         detection_limit_script = os.path.join(script_folder, "calc_variant_detection_limit.py")
         cmd4 = "python3 {0} -i {1} -o {2} -f {3}".format(detection_limit_script, haplotypes, parent_folder, freq)
 
-        # subprocess.call(cmd4, shell=True)
+        subprocess.call(cmd4, shell=True)
 
         # calc aa freq, glycs, entropy
         print("calculating aa freq, glycan freq and entropy")
         entropy_aa_calc_script = os.path.join(script_folder, "calc_entropy_aa_glycan_freq.py")
         cmd1 = "python3 {0} -i {1} -o {2} -n {3} -s {4}".format(entropy_aa_calc_script, alignment, analysis_folder,
                                                                 name, start)
-        # subprocess.call(cmd1, shell=True)
+        subprocess.call(cmd1, shell=True)
 
         # calc divergence
         if longitudinal:
@@ -163,7 +163,7 @@ def main(alignment, viral_load_file, parent_folder, start, script_folder, freq, 
             cmd2 = "python3 {0} -r {1} -i {2} -o {3} -n {4}".format(divergence_script, reference,
                                                                     alignment, divergence_folder, name)
 
-            # subprocess.call(cmd2, shell=True)
+            subprocess.call(cmd2, shell=True)
 
         # calc loop stats
         if env:
@@ -187,9 +187,9 @@ def main(alignment, viral_load_file, parent_folder, start, script_folder, freq, 
         aa_freq_infile = aa_frq_inpath[0]
         aa_frq_outpath = os.path.join(analysis_folder, "aa_freq")
 
-        # aa_plotter(aa_frq_script_file, aa_freq_infile, aa_frq_outpath, ab_time, bnab_time)
+        aa_plotter(aa_frq_script_file, aa_freq_infile, aa_frq_outpath, ab_time, bnab_time)
 
-    # plot glycan freqs
+    # plot glycan freq
     if run_step == 3:
         run_step += 1
 
@@ -199,7 +199,7 @@ def main(alignment, viral_load_file, parent_folder, start, script_folder, freq, 
         glyc_infile = glyc_inpath[0]
         glyc_outpath = os.path.join(analysis_folder, "glycans")
 
-        # glycan_plotter(glyc_script_file, glyc_infile, glyc_outpath, ab_time, bnab_time)
+        glycan_plotter(glyc_script_file, glyc_infile, glyc_outpath, ab_time, bnab_time)
 
     # plot entropy
     if run_step == 4:
@@ -209,7 +209,7 @@ def main(alignment, viral_load_file, parent_folder, start, script_folder, freq, 
         entropy_inpath = glob(entropy_search)
         entropy_outpath = os.path.join(analysis_folder, "entropy")
 
-        # entropy_plotter(entropy_script_file, entropy_inpath, entropy_outpath, ab_time, bnab_time)
+        entropy_plotter(entropy_script_file, entropy_inpath, entropy_outpath, ab_time, bnab_time)
 
     # plot divergence
     if run_step == 5:
