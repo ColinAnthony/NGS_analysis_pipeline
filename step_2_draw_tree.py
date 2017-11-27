@@ -124,6 +124,9 @@ def main(infile, outpath, name, limit, root, script_folder, sample_type):
     # cat the top n haplotyped files into one file
     out_name = name + "_top_{}hap.fasta".format(str(limit))
     top_hap_outfile = os.path.join(tree_analysis_folder, out_name)
+    if os.path.isfile(top_hap_outfile):
+        print("{0} file already exists, overwriting file".format(top_hap_outfile))
+        os.unlink(top_hap_outfile)
     search_haplotype = os.path.join(tree_haplotype_folder, "*hap.fasta")
 
     # if an external root is specified, get the name and sequence
