@@ -68,6 +68,9 @@ def gethxb2(dictionary):
 
 def main(infile, outpath, field):
 
+    infile = os.path.abspath(infile)
+    outpath = os.path.abspath(outpath)
+
     # import the data and remove HXB2 from alignment
     alignment_d = fasta_to_dct(infile)
     hxb2_key, hxb2_seq = gethxb2(alignment_d)

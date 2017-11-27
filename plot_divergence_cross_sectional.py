@@ -20,13 +20,13 @@ __author__ = 'colin'
 
 
 def transform_df_by_vl(headers, df, vl_file, participant):
-    '''
+    """
     :param headers: column header to plot on x axis data (Time (weeks))
     :param df: dataframe with headers
     :param dcn: dictionary of Time (weeks):viral load
     :param vl: (bool) transform frequency data by viral load
     :return: new data frame, with columns for freq in counts and freq in copies of virus
-    '''
+    """
     time = headers[0]
     item = headers[1]
 
@@ -63,14 +63,14 @@ def transform_df_by_vl(headers, df, vl_file, participant):
 
 
 def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, av_heads, av_df, vl_file):
-    '''
+    """
     :param headers: x axis header
     :param item: y axis header
     :param df: dataframe containing the data
     :param name: sample name ie: CAP177
     :param vl_file:
     :return: prints graphs to file
-    '''
+    """
     outname = name + "_divergence.png"
     outfile = os.path.join(outpath, outname)
     print("outfile is:", outfile)
@@ -127,12 +127,14 @@ def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, av_heads,
 
 
 def main(infile, vl_file, name, ab_time, bnab_time, outpath):
-    '''
+    """
     :param infile: csv file with format like that produced by loop_stats.py or calc_divergence.py
     :param name: string of prefix for graph files
     :param vl: (bool) transform frequency data by viral load
     :return: writes graphs to file depending on what columns are present in csv file
-    '''
+    """
+    infile = os.path.abspath(infile)
+    outpath = os.path.abspath(outpath)
 
     mpl.rc('font', serif='Arial')
     mpl.rcParams['font.family'] = 'Arial'

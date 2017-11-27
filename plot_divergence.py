@@ -107,7 +107,7 @@ def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, av_heads,
     if vl_file is None:
         ax.scatter(df[x_header], df[y_header], alpha=0.6, s=df["frequency"]*20, edgecolor='black', lw=0.5, zorder=2)
     else:
-        ax.scatter(df[x_header], df[y_header], alpha=0.6, s=df["freq_viral_copies"]/10, edgecolor='black', lw=0.5,
+        ax.scatter(df[x_header], df[y_header], alpha=0.6, s=df["freq_viral_copies"]/100, edgecolor='black', lw=0.5,
                    zorder=2)
 
     ## add legend
@@ -153,12 +153,17 @@ def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, av_heads,
 
 
 def main(infile, vl_file, name, ab_time, bnab_time, outpath):
-    '''
-    :param infile: csv file with format like that produced by loop_stats.py or calc_divergence.py
-    :param name: string of prefix for graph files
-    :param vl: (bool) transform frequency data by viral load
+    """
+
+    :param vl_file: csv file with format like that produced by loop_stats.py or calc_divergence.py
+    :param ab_time: (int) time point that nAbs emerge
+    :param bnab_time: (int) time point that bnAbs emerge
+    :param outpath: (str) path to output folder
     :return: writes graphs to file depending on what columns are present in csv file
-    '''
+    """
+
+    infile = os.path.abspath(infile)
+    outpath = os.path.abspath(outpath)
 
     mpl.rc('font', serif='Arial')
     mpl.rcParams['font.family'] = 'Arial'

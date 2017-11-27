@@ -344,6 +344,10 @@ def bub_tree(tree, fasta, outfile1, root, types, c_dict, show, size,
 
 def main(infile, fasta, outpath, name, root, types, show, size, colours, field1, field2, scale, multiplier, dna, consens):
     print(infile)
+
+    infile = os.path.abspath(infile)
+    outpath = os.path.abspath(outpath)
+
     name = name + '.png' # #svg, pdf or png possible
     outfile = os.path.join(outpath, name)
     if fasta is not None:

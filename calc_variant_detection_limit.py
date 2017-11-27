@@ -13,10 +13,10 @@ __author__ = 'Colin Anthony'
 
 
 def fasta_to_dct(fn):
-    '''
+    """
     :param fn: a fasta file
     :return: a dictionary
-    '''
+    """
     dct = collections.OrderedDict()
     for seq_record in SeqIO.parse(open(fn), "fasta"):
         dct[seq_record.description.replace(" ", "_")] = str(seq_record.seq).replace("~", "-").upper()
@@ -24,6 +24,8 @@ def fasta_to_dct(fn):
 
 
 def main(inpath, outpath, freq):
+    inpath = os.path.abspath(inpath)
+    outpath = os.path.abspath(outpath)
 
     infiles_search = os.path.join(inpath, "*sep.fasta")
     list_infiles = glob(infiles_search)
