@@ -88,6 +88,9 @@ def main(infile, outpath, field):
     name = os.path.split(full_inpath)[-1]
     name = name.replace("_sep.fasta", "_hap.fasta")
     out = os.path.join(full_outpath, name)
+    if os.path.isfile(out):
+        print("{0} file already exists, overwriting file".format(out))
+        os.unlink(out)
 
     # adjust field for python zero indexing
     adjust_field = field + 1

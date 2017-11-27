@@ -1,42 +1,22 @@
-#!/usr/bin/python
 from __future__ import print_function
 from __future__ import division
 import argparse
 import sys, os
-import subprocess
 import collections
 from Bio import SeqIO
-import time
 
 try:
     from ete3 import Tree, faces, TreeStyle, NodeStyle, TreeNode, add_face_to_node,  SequenceFace, SeqMotifFace
 except ImportError:
-    print("Your ete install is buggered...go and cry yourself to sleep")
-    time.sleep(4.1)
-    print("Only Joking!")
-    time.sleep(3.1)
-    print("But seriously, this is not good")
-    time.sleep(3.1)
-    print("Don't worry, I've got you covered")
-    time.sleep(3.1)
-    print("if you have trouble running this on the VM, make sure you log into the VM using the -X flag: ssh -X yourusername@srvubugal001")
-    print("if that doesn't work, try this:")
-    print("There's a catch though")
-    print("Installing on MS Windows can be problematic, try and find an Ubuntu computer, with python3 installed")
-    print("follow these instructions:")
-    print("install these by typing: sudo apt-get install python3-numpy python3-pyqt4 python3-lxml python3-six")
-    print("download ete3 from 'source' at: 'https://pypi.python.org/pypi/ete3/' (eg: ete3-3.0.0b35.tar.gz)")
-    print('unpack the python setup.py install .tar.gz file by running: sudo tar -xvzf ete3-3.0.0b35.tar.gz')
-    print('install the ete3 modules: enter the ete3 directory made by unpacking the .tar.gz file')
-    print('sudo python3 setup.py install')
-    print("You should be good to go now...")
+    print("Ete3 is not installed correctly. For best results, install ete3 from anaconda distribution, "
+          "as per http://etetoolkit.org/download/")
 
 
 def fasta_to_dct(fn):
-    '''
+    """
     :param fn: a fasta file
     :return: a dictionary
-    '''
+    """
     dct = collections.OrderedDict()
     for seq_record in SeqIO.parse(open(fn), "fasta"):
         dct[seq_record.description.replace(" ", "_")] = str(seq_record.seq).replace("~", "-").upper()
@@ -44,10 +24,10 @@ def fasta_to_dct(fn):
 
 
 def highlighter_dct(d, consens, colours):
-    '''
+    """
     :param d: a dictionary of names and sequences
     :return: a dictionary with sequences modified to show difference from a given template
-    '''
+    """
     ref = d[consens]
     del d[consens]
     if colours == 1:
@@ -76,11 +56,11 @@ def highlighter_dct(d, consens, colours):
 
 
 def get_time(tree, field2):
-    '''
+    """
     :param tree: tree object parsed from ete module
     :param field2: the '_' delimited field containing the sample/time point identifier
     :return: non_redundant list of time points, number of time points
-    '''
+    """
     times = []
     for node in tree.traverse():
         if node.is_leaf() == True:
@@ -100,11 +80,11 @@ def get_time(tree, field2):
 
 
 def col_map(times):
-    '''
+    """
     :param times: non_redundant list of time points from get_times function
     :param n_color: number of time points
     :return: dictionary mapping colour spectrum to time points, key = time point, value = colour code
-    '''
+    """
 
     colour_25 = ['#E50001', '#E32A00', '#E15700', '#E08300', '#DEAE00', '#DDD800', '#B4DB00', '#88D900',
               '#5CD800', '#31D600', '#06D500', '#00D323', '#00D24C', '#00D075', '#00CE9D', '#00CDC4',
@@ -143,7 +123,7 @@ def col_map(times):
 
 def bub_tree(tree, fasta, outfile1, root, types, c_dict, show, size,
              colours, field1, field2, scale, multiplier, dna):
-    '''
+    """
     :param tree: tree object from ete
     :param fasta: the fasta file used to make the tree
     :param outfile1: outfile suffix
@@ -160,7 +140,7 @@ def bub_tree(tree, fasta, outfile1, root, types, c_dict, show, size,
     :param dna true/false, is sequence a DNA sequence?
     :param t_list list of time points
     :return: None, outputs svg/pdf image of the tree
-    '''
+    """
 
     if multiplier is None:
         mult = 500
@@ -253,7 +233,7 @@ def bub_tree(tree, fasta, outfile1, root, types, c_dict, show, size,
     tstyle.show_branch_length = False
     tstyle.show_branch_support = False
     TreeNode(format=0, support=True)
-    tnode = TreeNode()
+    # tnode = TreeNode()
     
     if root is not None:
         tree.set_outgroup(root)

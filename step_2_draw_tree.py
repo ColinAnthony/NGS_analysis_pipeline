@@ -75,12 +75,13 @@ def main(infile, outpath, name, limit, root, script_folder, sample_type):
     full_file_path = os.path.abspath(infile)
     path = os.path.split(full_file_path)[0]
     parent_path = os.path.split(path)[0]
-    full_outpath = os.path.abspath(outpath)
 
     # make the output folder
     if outpath is None:
         tree_haplotype_folder = os.path.join(parent_path, "5haplotype", "tree_haplotype")
+        full_outpath = tree_haplotype_folder
     else:
+        full_outpath = os.path.abspath(outpath)
         tree_haplotype_folder = os.path.join(full_outpath, "tree_haplotype")
 
     if not os.path.exists(tree_haplotype_folder):
@@ -106,6 +107,7 @@ def main(infile, outpath, name, limit, root, script_folder, sample_type):
         os.makedirs(tree_haplotype_folder, exist_ok=True)
     except PermissionError as e:
         print(e)
+        sys.exit()
 
     # split the aligned file into subfiles
     split_by_unique = os.path.join(script_folder, 'split_fasta_into_subfiles.py')
@@ -113,7 +115,7 @@ def main(infile, outpath, name, limit, root, script_folder, sample_type):
     subprocess.call(cmd1, shell=True)
 
     # run haplotype script on subfiles
-    split_fasta_files = os.path.join(tree_haplotype_folder, "*_sep.fasta")
+    split_fasta_files = os.path.join(tree_haplotype_folder, "*sep.fasta")
     haplotyper = os.path.join(script_folder, 'calc_haplotype_freq.py')
     for split_fasta in glob(split_fasta_files):
         cmd2 = 'python3 {0} -i {1} -o {2}'.format(haplotyper, split_fasta, tree_haplotype_folder)
@@ -121,7 +123,7 @@ def main(infile, outpath, name, limit, root, script_folder, sample_type):
 
     # cat the top n haplotyped files into one file
     out_name = name + "_top_{}hap.fasta".format(str(limit))
-    top_hap_outfile = os.path.join(full_outpath, out_name)
+    top_hap_outfile = os.path.join(tree_analysis_folder, out_name)
     search_haplotype = os.path.join(tree_haplotype_folder, "*hap.fasta")
 
     # if an external root is specified, get the name and sequence
@@ -135,8 +137,9 @@ def main(infile, outpath, name, limit, root, script_folder, sample_type):
             with open(top_hap_outfile, 'a') as handle:
                 handle.write(">{0}\n{1}\n".format(root_name, root_seq))
 
+    rank = 0
+    root_name = root
     for hap_file in glob(search_haplotype):
-        rank = 0
         top_rec_counter = 0
         records = fasta_to_dct(hap_file)
 
@@ -144,18 +147,21 @@ def main(infile, outpath, name, limit, root, script_folder, sample_type):
             # get top record from first time point
             if root is None and rank == 0:
                 root_name = seq_name
-
-            while top_rec_counter < limit:
+                rank += 1
+                print("root", root_name)
+            if top_rec_counter < limit:
                 seq = seq.upper()
+                print('name', seq_name)
                 top_rec_counter += 1
+                print(rank)
                 with open(top_hap_outfile, 'a') as handle:
                     handle.write(">{0}\n{1}\n".format(seq_name, seq))
 
-            rank += 1
+
 
     # build the tree
     tree_infile = top_hap_outfile
-    tree_outfile = tree_infile.replace(".fasta", "nwk")
+    tree_outfile = tree_infile.replace(".fasta", ".nwk")
     if not sample_type:
         flag = '-nt'
     else:
@@ -171,6 +177,7 @@ def main(infile, outpath, name, limit, root, script_folder, sample_type):
 
     cmd3 = "python3 {0} -i {1} -o {2} -n {3} -r {4} -z -v {5}".format(tree_script, tree_outfile, tree_analysis_folder,
                                                                       tree_fig_name, root_name, scale)
+    print("plot_script: ", cmd3)
     subprocess.call(cmd3, shell=True)
 
 
@@ -184,7 +191,7 @@ if __name__ == "__main__":
 
     parser.add_argument('-i', '--infile', default=argparse.SUPPRESS, type=str, required=True,
                         help='The input fasta file, with all the time points in one file')
-    parser.add_argument('-o', '--outpath', default=None, type=str, required=True,
+    parser.add_argument('-o', '--outpath', default=None, type=str, required=False,
                         help='the path to where the intermediate files will be created (the haplotyped files)'
                              'Only use this if you did not run the full pipeline or want a custom out_folder.'
                              'By default the out_folder "5haplotype" will be used')

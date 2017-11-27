@@ -82,7 +82,7 @@ def main(infile, outpath, field):
         del alignment_d[hxb2_key]
 
     # adjust the field value for python zero indexing
-    adjust_field = field + 1
+    adjust_field = field
 
     # sort time-point/sample sequence entries into dictionaries by the specified unique field
     split_d = collections.defaultdict(dict)
@@ -93,7 +93,8 @@ def main(infile, outpath, field):
 
     # write the grouped sequences to their separate outfiles
     for group, group_d in split_d.items():
-        outfile = os.path.join(outpath, group, "sep.fasta")
+        out_name = group + "_sep.fasta"
+        outfile = os.path.join(outpath, out_name)
         if os.path.isfile(outfile):
             print("{0} file already exists, overwriting file".format(outfile))
             os.unlink(outfile)
