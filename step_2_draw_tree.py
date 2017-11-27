@@ -176,7 +176,7 @@ def main(infile, outpath, name, limit, root, script_folder, sample_type):
     # plot the tree figure
     tree_fig_name = name + "_tree"
     tree_script = os.path.join(script_folder, "bubble_tree.py")
-    scale = 50000
+    scale = 100000
 
     cmd3 = "python3 {0} -i {1} -o {2} -n {3} -r {4} -z -v {5}".format(tree_script, tree_outfile, tree_analysis_folder,
                                                                       tree_fig_name, root_name, scale)

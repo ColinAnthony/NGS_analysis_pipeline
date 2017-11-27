@@ -8,7 +8,7 @@ from Bio import SeqIO
 try:
     from ete3 import Tree, faces, TreeStyle, NodeStyle, TreeNode, add_face_to_node,  SequenceFace, SeqMotifFace
 except ImportError:
-    print("Ete3 is not installed correctly. For best results, install ete3 from anaconda distribution, "
+    print("Ete3 is not installed correctly. For best results, install ete3 from the anaconda distribution, "
           "as per http://etetoolkit.org/download/")
 
 
@@ -328,7 +328,7 @@ def main(infile, fasta, outpath, name, root, types, show, size, colours, field1,
     infile = os.path.abspath(infile)
     outpath = os.path.abspath(outpath)
 
-    name = name + '.png' # #svg, pdf or png possible
+    name = name + '.svg' # #svg, pdf or png possible
     outfile = os.path.join(outpath, name)
     if fasta is not None:
         dc = fasta_to_dct(fasta)
