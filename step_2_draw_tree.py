@@ -142,7 +142,7 @@ def main(infile, outpath, name, limit, root, script_folder, sample_type):
 
     rank = 0
     root_name = root
-    for hap_file in glob(search_haplotype):
+    for hap_file in sorted(glob(search_haplotype)):
         top_rec_counter = 0
         records = fasta_to_dct(hap_file)
 
