@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 from __future__ import print_function
 from __future__ import division
-import sys
 import os
+import sys
 import argparse
 import subprocess
 from glob import glob
