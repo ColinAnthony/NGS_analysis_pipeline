@@ -6,9 +6,7 @@ import os
 import sys
 import collections
 import argparse
-import regex
 from Bio import SeqIO
-from glob import glob
 from glob import glob
 
 

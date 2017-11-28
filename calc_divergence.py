@@ -6,18 +6,17 @@ import os
 import sys
 import collections
 import argparse
-import regex
 from Bio import SeqIO
-from glob import glob
+
 
 __author__ = 'colin'
 
 
 def fasta_to_dct(fn):
-    '''
+    """
     :param fn: a fasta file
     :return: a dictionary
-    '''
+    """
     dct = collections.OrderedDict()
     for seq_record in SeqIO.parse(open(fn), "fasta"):
         dct[seq_record.description.replace(" ", "_")] = str(seq_record.seq).replace("~", "-").upper()
@@ -25,10 +24,10 @@ def fasta_to_dct(fn):
 
 
 def gethxb2(dict):
-    '''
+    """
     :param dict: a dictionary of your aligned input sequences. Must contain HXB2, with HXB2 in the header
     :return: the HXB2 sequence as a string
-    '''
+    """
     found = False
     hxb2_seq = None
     hxb2_key = None
