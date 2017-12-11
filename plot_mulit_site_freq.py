@@ -2,12 +2,10 @@ from __future__ import print_function
 from __future__ import division
 import argparse
 import os
-import sys
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-from matplotlib.ticker import AutoMinorLocator
-import seaborn as sns
+
 
 __author__ = 'colin'
 
@@ -57,13 +55,25 @@ def divergence_plotter(headers, df, name, outfile, ab_time, bnab_time, vl_file):
     """
 
     ymax = 101
-    xmax = 60
+    xmax = 30
     ymin = 0
     xmin = 0
     selection_bound = 10
     x_step = int(xmax/10.0)
     # fiter the dataframe to only those haplotypes which are greater than the % selection bound and up to time xmax
-    df = df[(df.Time <= xmax) & df.groupby("Haplotype")["Frequency"].filter(lambda x: x.max() > selection_bound)]
+
+    # set haplotypes as column headers
+    piv_df = df.pivot(index=headers[0], columns=headers[1])
+
+    # reset time as column not index
+    piv_df.reset_index(level=0, inplace=True)
+
+    # filter by desited xaxis time point
+    filt_df = piv_df[(piv_df.Time <= xmax)]
+
+    # filter by those column with xmax > selection and xmin < 100 - selection
+    new_df = filt_df.loc[:, (filt_df.max() >= selection_bound) & (filt_df.min() <= 100 - selection_bound)]
+    new_df.fillna(value=0)
 
     # set axes
     fig, ax = plt.subplots(1, 1)
@@ -75,9 +85,12 @@ def divergence_plotter(headers, df, name, outfile, ab_time, bnab_time, vl_file):
     ax.get_xaxis().tick_bottom()
     ax.get_yaxis().tick_left()
     ax.set_facecolor('white')
-    #
-    df.set_index("Time", inplace=True)
-    df.groupby("Haplotype")["Frequency"].plot(legend=True)
+
+    new_df.set_index("Time", inplace=True)
+
+    new_df.columns = new_df.columns.get_level_values(1)
+    new_df.plot(kind='line', style='.-')
+
     plt.legend(frameon=False, framealpha=False,bbox_to_anchor=(1.01, 0.901))
 
     plt.ylim(ymin, ymax + 1)
@@ -87,7 +100,6 @@ def divergence_plotter(headers, df, name, outfile, ab_time, bnab_time, vl_file):
 
     plt.ylabel("Frequency (%)", fontsize=24, labelpad=14)
     plt.xlabel("Weeks post infection", fontsize=24, labelpad=12)
-
 
     # add annotations for nAb time points
     if ab_time is not None:
