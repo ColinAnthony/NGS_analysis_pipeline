@@ -106,7 +106,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='collapses sequences by unique, with freq added to the name',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-i', '--infile', type=str, required=True,
-                        help='The input fata file')
+                        help='The input fasta file')
     parser.add_argument('-o', '--outpath', required=True, type=str,
                         help='path for output.')
     parser.add_argument('-f', '--field', type=int, default=4, required=False,

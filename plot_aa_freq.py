@@ -93,7 +93,7 @@ def main(infile, outpath, ab_time, bnab_time):
             f.set_size_inches(w, h)
 
             # write figure to file
-            out_fn = os.path.join(outpath, "Site_" + str(int(pos)) + "_rel.png")
+            out_fn = os.path.join(outpath, "Site_" + str(pos) + "_rel.png")
             plt.savefig(out_fn, ext='png', dpi=600, format='png', facecolor='white', bbox_inches='tight')
             plt.close('all')
 

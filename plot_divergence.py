@@ -89,9 +89,9 @@ def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, av_heads,
     xmin = 0
     # df.sort_values(by=[y_header], inplace=True, ascending=True)
     if vl_file is not None:
-        df.sort_values(by=["freq_viral_copies"], inplace=True, ascending=True)
+        df.sort_values(by=["freq_viral_copies"], inplace=True, ascending=False)
     else:
-        df.sort_values(by=["frequency"], inplace=True, ascending=True)
+        df.sort_values(by=["frequency"], inplace=True, ascending=False)
     # set axes
     fig, ax = plt.subplots(1, 1)
     ax.axes.get_yaxis().set_visible(True)
@@ -107,7 +107,8 @@ def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, av_heads,
     if vl_file is None:
         ax.scatter(df[x_header], df[y_header], alpha=0.6, s=df["frequency"]*20, edgecolor='black', lw=0.5, zorder=2)
     else:
-        ax.scatter(df[x_header], df[y_header], alpha=0.6, s=df["freq_viral_copies"]/100, edgecolor='black', lw=0.5,
+        ymax += 2
+        ax.scatter(df[x_header], df[y_header], alpha=0.6, s=df["freq_viral_copies"]/5, edgecolor='black', lw=0.5,
                    zorder=2)
 
     ## add legend
