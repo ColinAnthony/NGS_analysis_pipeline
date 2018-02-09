@@ -12,7 +12,7 @@ from matplotlib.ticker import AutoMinorLocator
 import matplotlib.cm as cm
 
 
-__author__ = 'colin (and David Matten)'
+__author__ = 'Colin Anthony. Assistance from David Matten'
 
 
 def main(infile, outpath, ab_time, bnab_time):
