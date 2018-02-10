@@ -12,7 +12,7 @@ from matplotlib.ticker import AutoMinorLocator
 import matplotlib.cm as cm
 
 
-__author__ = 'colin (and David Matten)'
+__author__ = 'Colin Anthony. Assistance from David Matten'
 
 
 def main(infile, outpath, ab_time, bnab_time):
@@ -63,12 +63,13 @@ def main(infile, outpath, ab_time, bnab_time):
             plt.title("Position " + str(int(pos)), ha='center', fontsize=20)
 
             # set the axis limits and axis tick intervals
-            plt.xticks(list(range(xmin, int(xmax), 20)), fontsize=10)
+            plt.xticks(list(range(40, int(xmax), 20)), fontsize=10)
             plt.yticks(np.arange(y_lim_min, y_lim_max, 20), fontsize=10)
             plt.ylim(0, 100.05)
+            plt.xlim(40, xmax + 20)
 
             # plot the aa freq for the given position
-            df_new.plot(x=time_header, title="Position " + str(int(pos)), color=my_colors, marker='o',
+            df_new.plot(x=time_header, title="Position " + str(pos), color=my_colors, marker='o',
                         markersize=5, linewidth=2, zorder=3)
 
             # plot the antibody annotations
@@ -119,3 +120,4 @@ if __name__ == "__main__":
     bnab_time = args.bnab_time
 
     main(infile, outpath, ab_time, bnab_time)
+
