@@ -12,7 +12,7 @@ from matplotlib.ticker import AutoMinorLocator
 import matplotlib.cm as cm
 
 
-__author__ = 'colin (and David Matten: david.matten@uct.ac.za)'
+__author__ = 'colin (and David Matten)'
 
 
 def main(infile, outpath, ab_time, bnab_time):
@@ -22,12 +22,12 @@ def main(infile, outpath, ab_time, bnab_time):
     if outpath == None:
         outpath = os.getcwd()
 
-    selection_bound = 1
+    selection_bound = 5
     time_header = "Time"
     group_col = "HXB2_position"
     y_lim_min = 0
     y_lim_max = 100
-    xmin = 0
+    xmin = 40
 
     for pos, df_grp in df.groupby(group_col):
 
