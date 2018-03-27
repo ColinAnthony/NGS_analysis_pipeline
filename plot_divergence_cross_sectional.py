@@ -83,7 +83,7 @@ def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, av_heads,
     participant_d = {participants: n for n, participants in enumerate(participants_list)}
     df["plot_x"] = df[x_header].map(participant_d)
 
-
+    # use rank instead??
     title = name
     max_divergence_series = df.groupby(x_header)[y_header].max()
     df['colour'] = df[x_header].map(max_divergence_series)

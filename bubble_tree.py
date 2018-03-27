@@ -88,6 +88,7 @@ def get_time(tree, field2):
             try:
                 name = node.name.split("_")
                 t = name[field2]
+
             except:
                 t = 'zero'
                 print("incorrect name format: sequence assigned time point of 'zero")
@@ -269,7 +270,7 @@ def bub_tree(tree, fasta, outfile1, root, types, c_dict, show, size,
             try:
                 name = node.name.split("_")
                 time = name[field2]
-                kind = name[3]
+                kind = name[5]
 
                 #print(name)
             except:
@@ -290,6 +291,13 @@ def bub_tree(tree, fasta, outfile1, root, types, c_dict, show, size,
             colour = c_dict[time]
             time_col.append((time, colour))
             nstyle = NodeStyle()
+            if kind == 'NGS':
+                nstyle["shape"] = "circle"
+            elif kind == 'SGA':
+                nstyle["shape"] = "square"
+            else:
+                nstyle["shape"] = "square"
+
             nstyle["fgcolor"] = colour
             nstyle["size"] = s
             nstyle["hz_line_width"] = 10
