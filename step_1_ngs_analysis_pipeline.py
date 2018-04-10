@@ -124,7 +124,8 @@ def main(alignment, viral_load_file, parent_folder, start, freq, ab_time, bnab_t
 
     loops = [x.lower() for x in loops]
     alignment = os.path.abspath(alignment)
-    viral_load_file = os.path.abspath(viral_load_file)
+    if viral_load_file is not None:
+        viral_load_file = os.path.abspath(viral_load_file)
     parent_folder = os.path.abspath(parent_folder)
     script_folder = os.path.abspath(script_folder)
     reference = os.path.abspath(reference)
@@ -224,7 +225,6 @@ def main(alignment, viral_load_file, parent_folder, start, freq, ab_time, bnab_t
             divergence_search = os.path.join(analysis_folder, "divergence", "*divergence.csv")
             divergence_inpath = glob(divergence_search)
             divergence_outpath = os.path.join(analysis_folder, "divergence")
-
             divergence_plotter(divergence_script_file, divergence_inpath, divergence_outpath, ab_time, bnab_time,
                                viral_load_file)
 
