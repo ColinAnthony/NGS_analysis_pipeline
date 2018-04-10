@@ -113,10 +113,15 @@ def loop_stats_plotter(script_file, infiles, outpath, ssnab, bnab, vl_file):
         subprocess.call(cmd1, shell=True)
 
 
-def main(alignment, viral_load_file, parent_folder, start, script_folder, freq, ab_time, bnab_time,
+def main(alignment, viral_load_file, parent_folder, start, freq, ab_time, bnab_time,
          reference, longitudinal, env, loops, run_step):
 
     print(alignment)
+
+    get_script_path = os.path.realpath(__file__)
+    script_folder = os.path.split(get_script_path)[0]
+    script_folder = os.path.abspath(script_folder)
+
     loops = [x.lower() for x in loops]
     alignment = os.path.abspath(alignment)
     viral_load_file = os.path.abspath(viral_load_file)
@@ -248,8 +253,6 @@ if __name__ == "__main__":
                         help='The path to the gene region folder, created by running part1_ngs_processing_pipeline')
     parser.add_argument('-s', '--start', default=1, type=int, required=False,
                         help='the HXB2 start position of your alignment')
-    parser.add_argument('-sf', '--script_folder', default=argparse.SUPPRESS, type=str, required=True,
-                        help='the path to the folder containing the pipeline scripts')
     parser.add_argument('-f', '--freq', type=float, default=1, required=False,
                         help='The percent frequency threshold of the variant to detect')
     parser.add_argument('-t', '--ab_time', type=int, required=False,
@@ -279,7 +282,6 @@ if __name__ == "__main__":
     viral_load_file = args.viral_load_file
     start = args.start
     path = args.path
-    script_folder = args.script_folder
     freq = args.freq
     ab_time = args.ab_time
     bnab_time = args.bnab_time
@@ -289,5 +291,5 @@ if __name__ == "__main__":
     loops = args.loops
     run_step = args.run_step
 
-    main(infile1, viral_load_file, path, start, script_folder, freq, ab_time, bnab_time, reference, longitudinal, env,
+    main(infile1, viral_load_file, path, start, freq, ab_time, bnab_time, reference, longitudinal, env,
          loops, run_step)
