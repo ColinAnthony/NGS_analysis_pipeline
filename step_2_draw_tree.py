@@ -69,17 +69,21 @@ def gethxb2(dictionary):
     return str(hxb2_key), str(hxb2_seq)
 
 
-def main(infile, outpath, name, limit, root, script_folder, sample_type):
+def main(infile, outpath, name, limit, root, sample_type):
 
     # get out_folder
     full_file_path = os.path.abspath(infile)
     path = os.path.split(full_file_path)[0]
     parent_path = os.path.split(path)[0]
 
+    get_script_path = os.path.realpath(__file__)
+    script_folder = os.path.split(get_script_path)[0]
+    script_folder = os.path.abspath(script_folder)
+
     # make the output folder
     if outpath is None:
         tree_haplotype_folder = os.path.join(parent_path, "5haplotype", "tree_haplotype")
-        full_outpath = tree_haplotype_folder
+
     else:
         full_outpath = os.path.abspath(outpath)
         tree_haplotype_folder = os.path.join(full_outpath, "tree_haplotype")
@@ -160,8 +164,6 @@ def main(infile, outpath, name, limit, root, script_folder, sample_type):
                 with open(top_hap_outfile, 'a') as handle:
                     handle.write(">{0}\n{1}\n".format(seq_name, seq))
 
-
-
     # build the tree
     tree_infile = top_hap_outfile
     tree_outfile = tree_infile.replace(".fasta", ".nwk")
@@ -204,8 +206,6 @@ if __name__ == "__main__":
                         help='the number of sequences to select from each file')
     parser.add_argument('-r', '--root', default=None, type=str, required=False,
                         help='fasta file containing the sequence to use if an external root sequence is required')
-    parser.add_argument('-sf', '--script_folder', default=argparse.SUPPRESS, type=str, required=True,
-                        help='the path to the folder containing the pipeline scripts')
     parser.add_argument('-st', '--sample_type', default=False, action='store_true', required=False,
                         help='Use this flag if the file contains protein sequences. Default = DNA')
     args = parser.parse_args()
@@ -214,6 +214,6 @@ if __name__ == "__main__":
     name = args.name
     limit = args.limit
     root = args.root
-    script_folder = args.script_folder
     sample_type = args.sample_type
-    main(infile, outpath, name, limit, root, script_folder, sample_type)
+
+    main(infile, outpath, name, limit, root, sample_type)
