@@ -120,8 +120,8 @@ def main(ref, align_file, outpath, name):
 
     # import the reference
     ref = fasta_to_dct(ref)
-    refseq = str(ref.seq).upper()
-
+    ref_seq = str(list(ref.values())[0]).upper()
+    ref_name = str(list(ref.keys())[0])
     # store all sequnces in a dict
     all_sequences = fasta_to_dct(align_file)
 
@@ -135,14 +135,14 @@ def main(ref, align_file, outpath, name):
 
     # calculate the divergence from the reference for each sequnce
     for seq_name, seq in sorted(all_sequences.items()):
-        if len(seq) != len(refseq):
+        if len(seq) != len(ref_seq):
             print("input sequence and reference sequence were not the same length.")
             sys.exit()
         else:
             time = seq_name.split("_")[2][:-3]
 
-            # hamdist = distance.hamming(seq, refseq, normalized=True)
-            normadjustdist_perc = round(normcustomdist(seq, refseq) * 100, 2)
+            # hamdist = distance.hamming(seq, ref_seq, normalized=True)
+            normadjustdist_perc = round(normcustomdist(seq, ref_seq) * 100, 2)
 
             with open(outfile, "a") as handle:
                 handle.write(",".join([str(x) for x in [time, normadjustdist_perc,  seq_name]]) + "\n")
