@@ -2,30 +2,53 @@
 from __future__ import print_function
 from __future__ import division
 import argparse
-from Bio import SeqIO
-import regex
 import collections
 import os
+from itertools import groupby
+import regex
+
 
 __author__ = 'colin.anthony001@gmail.com'
 
 
-def fasta_to_dct(fn):
-    '''
-    :param fn: a fasta file
-    :return: a dictionary
-    '''
-    dct = collections.OrderedDict()
-    for seq_record in SeqIO.parse(open(fn), "fasta"):
-        dct[seq_record.description.replace(" ", "_")] = str(seq_record.seq).replace("~", "-").upper()
+def py3_fasta_iter(fasta_name):
+    """
+    modified from Brent Pedersen: https://www.biostars.org/p/710/#1412
+    given a fasta file. yield tuples of header, sequence
+    """
+    fh = open(str(fasta_name), 'r')
+    faiter = (x[1] for x in groupby(fh, lambda line: line[0] == ">"))
+    for header in faiter:
+        # drop the ">"
+        header_str = header.__next__()[1:].strip()
+        # join all sequence lines to one.
+        seq = "".join(s.strip() for s in faiter.__next__())
+        yield (header_str, seq)
+
+
+def fasta_to_dct(file_name):
+    """
+    :param file_name: The fasta formatted file to read from.
+    :return: a dictionary of the contents of the file name given. Dictionary in the format:
+    {sequence_id: sequence_string, id_2: sequence_2, etc.}
+    """
+    dct = collections.defaultdict(str)
+    my_gen = py3_fasta_iter(file_name)
+    for k, v in my_gen:
+        new_key = k.replace(" ", "_")
+        if new_key in dct.keys():
+            print("Duplicate sequence ids found. Exiting")
+            raise KeyError("Duplicate sequence ids found")
+        dct[new_key] = str(v).replace("~", "_")
+
     return dct
 
 
 def gethxb2(dict):
-    '''
+    """
     :param dict: a dictionary of your aligned input sequences. Must contain HXB2, with HXB2 in the header
     :return: the HXB2 sequence and name, as a strings
-    '''
+    """
     found = False
     hxb2_seq = None
     hxb2_key = None
@@ -43,12 +66,12 @@ def gethxb2(dict):
 
 
 def find_loop(hxb2, loopstart, loopend):
-    '''
+    """
     :param hxb2: protein sequence of HXB2 from an alignment to your sequences
     :param loopstart: region of interest (start)
     :param loopend: region of interest (end)
     :return: index where loop/region starts in alignment, index where loop/region ends
-    '''
+    """
     options = {
     "V1start" : "(C[-]*V[-]*S[-]*L[-]*K[-]*C)",
     "V1end" : "(C[-]*S[-]*F[-]*N[-]*I)",
@@ -77,12 +100,12 @@ def find_loop(hxb2, loopstart, loopend):
 
 
 def loopseq(v, start, end):
-    '''
+    """
     :param v: a protein sequence string
     :param start: the loop start index (from find_loop)
     :param end: the loop end index (from find_loop)
     :return: a degapped string of the sequence between the start and end index's
-    '''
+    """
     try:
         seq = v[start:end+1]
     except:
@@ -93,19 +116,19 @@ def loopseq(v, start, end):
 
 
 def looplen(seq):
-    '''
+    """
     :param seq: a protein sequence string
     :return: loop_length
-    '''
+    """
     l = len(seq)
     return int(l)
 
 
 def loopcharge(seq):
-    '''
+    """
     :param seq: a protein sequence string
     :return: loop av charge
-    '''
+    """
     charge = 0
     c = {"R": 1, "K": 1, "H": 1, "E": -1, "D": -1}
     for item in seq:
@@ -115,10 +138,10 @@ def loopcharge(seq):
 
 
 def loopglyc(seq): #NOTE: detects overlapping glycosylation sites, IE: "NNST", as two sites.
-    '''
+    """
     :param seq: a protein sequence string
     :return: number of glycan sites in the sequence
-    '''
+    """
     glyc = 0
     motif = "(N[-]*[^P-][-]*[TS])"
     c = regex.finditer(motif, seq, overlapped=True)
@@ -128,14 +151,17 @@ def loopglyc(seq): #NOTE: detects overlapping glycosylation sites, IE: "NNST", a
 
 
 def main(infile, outpath, name, v1, v2, c2, v3, c3, v4, c4, v5):
-    '''
+    """
     :param infile: (str) inpath name to sequences aligned in coding space, with HXB2
     :param outpath: (str) path to the outfile
     :param name: (str) outfile name prefix
     :param v1 to v5: the v-loop(s) to compute stats for
     :param dna: (bool) is the alignment dna?
     :return: a csv file with all the loop summary values for all sequences
-    '''
+    """
+    infile = os.path.abspath(infile)
+    outpath = os.path.abspath(outpath)
+
     print("file name:", infile)
 
     name = name + "_loop_stats.csv"
@@ -167,7 +193,7 @@ def main(infile, outpath, name, v1, v2, c2, v3, c3, v4, c4, v5):
         outfile_string1.append(str(todo[i].upper()) + "_loop_length,")
         outfile_string1.append(str(todo[i].upper()) + "_loop_charge,")
         outfile_string1.append(str(todo[i].upper()) + "_number_of_glycans,")
-    outfile_string1.append("sequence_id,")
+    outfile_string1.append("sequence_id")
     outfile_string1.append("\n")
     outfilename_all = "".join(outfile_string1)
     with open(outfile, "w") as handle:

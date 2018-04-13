@@ -34,7 +34,7 @@ def line(df, out_string, item, glyc_site, ab_time, bnab_time):
     # set axis limits
     xmax = int(max(df[headers[0]])) + 10
     xmin = 0
-    ymax = 100
+    ymax = 102
     ymin = 0
 
     fig, ax = plt.subplots(1, 1)
@@ -45,7 +45,7 @@ def line(df, out_string, item, glyc_site, ab_time, bnab_time):
 
     plt.xticks(list(range(xmin, xmax, 20)), fontsize=14)
     plt.yticks(list(range(ymin, int(ymax), 20)), fontsize=14)
-    plt.ylim(ymin, ymax+1)
+    plt.ylim(ymin, ymax)
     plt.xlim(xmin, xmax)
 
     # set the axis labels

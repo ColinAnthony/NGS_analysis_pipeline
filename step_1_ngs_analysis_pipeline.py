@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 from __future__ import print_function
 from __future__ import division
-import sys
 import os
+import sys
 import argparse
 import subprocess
 from glob import glob
@@ -14,26 +14,33 @@ __author__ = 'Colin Anthony'
 def aa_plotter(script_file, infile, outpath, ssnab, bnab):
 
     print("plotting amino acid frequencies")
-    if ssnab is not None:
-        ssnab_arg = "-t {0}".format(ssnab)
+    if bnab is None and ssnab is not None:
+        ab_markers = '-t {0}'.format(ssnab)
+    elif bnab is not None and ssnab is None:
+        ab_markers = '-b {0}'.format(bnab)
+    elif bnab is not None and ssnab is not None:
+        ab_markers = '-t {0} -b {1}'.format(ssnab, bnab)
     else:
-        ssnab_arg = ''
+        ab_markers = ''
 
-    if bnab is not None:
-        bnab_arg = "-b {0}".format(bnab)
-    else:
-        bnab_arg = ''
-
-    cmd1 = "python3 {0} -i {1} -o {2} {3} {4}".format(script_file, infile, outpath, ssnab_arg, bnab_arg)
+    cmd1 = "python3 {0} -i {1} -o {2} {3}".format(script_file, infile, outpath, ab_markers)
 
     subprocess.call(cmd1, shell=True)
 
 
 def glycan_plotter(script_file, infile, outpath, ssnab, bnab):
 
-    print("plotting glycan frequencies"
-          )
-    cmd1 = "python3 {0} -i {1} -o {2} -t {3} -b {4}".format(script_file, infile, outpath, ssnab, bnab)
+    print("plotting glycan frequencies")
+    if bnab is None and ssnab is not None:
+        ab_markers = '-t {0}'.format(ssnab)
+    elif bnab is not None and ssnab is None:
+        ab_markers = '-b {0}'.format(bnab)
+    elif bnab is not None and ssnab is not None:
+        ab_markers = '-t {0} -b {1}'.format(ssnab, bnab)
+    else:
+        ab_markers = ''
+
+    cmd1 = "python3 {0} -i {1} -o {2} {3}".format(script_file, infile, outpath, ab_markers)
 
     subprocess.call(cmd1, shell=True)
 
@@ -41,10 +48,19 @@ def glycan_plotter(script_file, infile, outpath, ssnab, bnab):
 def entropy_plotter(script_file, infiles, outpath, ssnab, bnab):
 
     print("plotting entropy heatmaps")
+    if bnab is None and ssnab is not None:
+        ab_markers = '-t {0}'.format(ssnab)
+    elif bnab is not None and ssnab is None:
+        ab_markers = '-b {0}'.format(bnab)
+    elif bnab is not None and ssnab is not None:
+        ab_markers = '-t {0} -b {1}'.format(ssnab, bnab)
+    else:
+        ab_markers = ''
 
     for infile in infiles:
         name = os.path.split(infile)[-1].replace(".csv", "")
-        cmd1 = "python3 {0} -i {1} -o {2} -n {3} -t {4} -b {5}".format(script_file, infile, outpath, name, ssnab, bnab)
+
+        cmd1 = "python3 {0} -i {1} -o {2} -n {3} {4}".format(script_file, infile, outpath, name, ab_markers)
 
         subprocess.call(cmd1, shell=True)
 
@@ -57,10 +73,19 @@ def divergence_plotter(script_file, infiles, outpath, ssnab, bnab, vl_file):
     else:
         vl_inflie = '-i2 {0}'.format(vl_file)
 
+    if bnab is None and ssnab is not None:
+        ab_markers = '-t {0}'.format(ssnab)
+    elif bnab is not None and ssnab is None:
+        ab_markers = '-b {0}'.format(bnab)
+    elif bnab is not None and ssnab is not None:
+        ab_markers = '-t {0} -b {1}'.format(ssnab, bnab)
+    else:
+        ab_markers = ''
+
     for infile in infiles:
         name = os.path.split(infile)[-1].replace("_divergence.csv", "")
-        cmd1 = "python3 {0} -i1 {1} {2} -o {3} -n {4} -t {5} -b {6}".format(script_file, infile, vl_inflie,
-                                                                                outpath, name, ssnab, bnab)
+        cmd1 = "python3 {0} -i1 {1} {2} -o {3} -n {4} {5}".format(script_file, infile, vl_inflie,
+                                                                  outpath, name, ab_markers)
 
         subprocess.call(cmd1, shell=True)
 
@@ -71,19 +96,40 @@ def loop_stats_plotter(script_file, infiles, outpath, ssnab, bnab, vl_file):
         vl_inflie = ''
     else:
         vl_inflie = '-i2 {0}'.format(vl_file)
+    if bnab is None and ssnab is not None:
+        ab_markers = '-t {0}'.format(ssnab)
+    elif bnab is not None and ssnab is None:
+        ab_markers = '-b {0}'.format(bnab)
+    elif bnab is not None and ssnab is not None:
+        ab_markers = '-t {0} -b {1}'.format(ssnab, bnab)
+    else:
+        ab_markers = ''
 
     for infile in infiles:
         name = os.path.split(infile)[-1].replace("_loop_stats.csv", "")
-        cmd1 = "python3 {0} -i1 {1} {2} -o {3} -n {4} -t {5} -b {6}".format(script_file, infile, vl_inflie,
-                                                                            outpath, name, ssnab, bnab)
+        cmd1 = "python3 {0} -i1 {1} {2} -o {3} -n {4} {5}".format(script_file, infile, vl_inflie,
+                                                                  outpath, name, ab_markers)
 
         subprocess.call(cmd1, shell=True)
 
 
-def main(alignment, viral_load_file, parent_folder, start, script_folder, freq, ab_time, bnab_time,
+def main(alignment, viral_load_file, parent_folder, start, freq, ab_time, bnab_time,
          reference, longitudinal, env, loops, run_step):
 
     print(alignment)
+
+    get_script_path = os.path.realpath(__file__)
+    script_folder = os.path.split(get_script_path)[0]
+    script_folder = os.path.abspath(script_folder)
+
+    loops = [x.lower() for x in loops]
+    alignment = os.path.abspath(alignment)
+    if viral_load_file is not None:
+        viral_load_file = os.path.abspath(viral_load_file)
+    parent_folder = os.path.abspath(parent_folder)
+    script_folder = os.path.abspath(script_folder)
+    reference = os.path.abspath(reference)
+
     name = "_".join(os.path.split(alignment)[-1].split("_")[:2])
 
     analysis_folder = os.path.join(parent_folder, "6analysis")
@@ -149,7 +195,7 @@ def main(alignment, viral_load_file, parent_folder, start, script_folder, freq, 
 
         aa_plotter(aa_frq_script_file, aa_freq_infile, aa_frq_outpath, ab_time, bnab_time)
 
-    # plot glycan freqs
+    # plot glycan freq
     if run_step == 3:
         run_step += 1
 
@@ -179,7 +225,6 @@ def main(alignment, viral_load_file, parent_folder, start, script_folder, freq, 
             divergence_search = os.path.join(analysis_folder, "divergence", "*divergence.csv")
             divergence_inpath = glob(divergence_search)
             divergence_outpath = os.path.join(analysis_folder, "divergence")
-
             divergence_plotter(divergence_script_file, divergence_inpath, divergence_outpath, ab_time, bnab_time,
                                viral_load_file)
 
@@ -208,8 +253,6 @@ if __name__ == "__main__":
                         help='The path to the gene region folder, created by running part1_ngs_processing_pipeline')
     parser.add_argument('-s', '--start', default=1, type=int, required=False,
                         help='the HXB2 start position of your alignment')
-    parser.add_argument('-sf', '--script_folder', default=argparse.SUPPRESS, type=str, required=True,
-                        help='the path to the folder containing the pipeline scripts')
     parser.add_argument('-f', '--freq', type=float, default=1, required=False,
                         help='The percent frequency threshold of the variant to detect')
     parser.add_argument('-t', '--ab_time', type=int, required=False,
@@ -239,7 +282,6 @@ if __name__ == "__main__":
     viral_load_file = args.viral_load_file
     start = args.start
     path = args.path
-    script_folder = args.script_folder
     freq = args.freq
     ab_time = args.ab_time
     bnab_time = args.bnab_time
@@ -249,5 +291,5 @@ if __name__ == "__main__":
     loops = args.loops
     run_step = args.run_step
 
-    main(infile1, viral_load_file, path, start, script_folder, freq, ab_time, bnab_time, reference, longitudinal, env,
+    main(infile1, viral_load_file, path, start, freq, ab_time, bnab_time, reference, longitudinal, env,
          loops, run_step)

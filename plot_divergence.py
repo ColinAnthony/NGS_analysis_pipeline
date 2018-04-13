@@ -19,13 +19,13 @@ __author__ = 'colin'
 
 
 def transform_df_by_vl(headers, df, vl_file, participant):
-    '''
+    """
     :param headers: column header to plot on x axis data (Time (weeks))
     :param df: dataframe with headers
     :param dcn: dictionary of Time (weeks):viral load
     :param vl: (bool) transform frequency data by viral load
     :return: new data frame, with columns for freq in counts and freq in copies of virus
-    '''
+    """
     time = headers[0]
     item = headers[1]
 
@@ -62,14 +62,14 @@ def transform_df_by_vl(headers, df, vl_file, participant):
 
 
 def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, av_heads, av_df, vl_file):
-    '''
+    """
     :param headers: x axis header
     :param item: y axis header
     :param df: dataframe containing the data
     :param name: sample name ie: CAP177
     :param vl_file:
     :return: prints graphs to file
-    '''
+    """
     x_header = headers[0]
     y_header = headers[1]
 
@@ -91,7 +91,7 @@ def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, av_heads,
     if vl_file is not None:
         df.sort_values(by=["freq_viral_copies"], inplace=True, ascending=False)
     else:
-        df.sort_values(by=["frequency"], inplace=True, ascending=True)
+        df.sort_values(by=["frequency"], inplace=True, ascending=False)
     # set axes
     fig, ax = plt.subplots(1, 1)
     ax.axes.get_yaxis().set_visible(True)
@@ -107,7 +107,8 @@ def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, av_heads,
     if vl_file is None:
         ax.scatter(df[x_header], df[y_header], alpha=0.6, s=df["frequency"]*20, edgecolor='black', lw=0.5, zorder=2)
     else:
-        ax.scatter(df[x_header], df[y_header], alpha=0.6, s=df["freq_viral_copies"]/10, edgecolor='black', lw=0.5,
+        ymax += 2
+        ax.scatter(df[x_header], df[y_header], alpha=0.6, s=df["freq_viral_copies"]/5, edgecolor='black', lw=0.5,
                    zorder=2)
 
     ## add legend
@@ -153,12 +154,17 @@ def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, av_heads,
 
 
 def main(infile, vl_file, name, ab_time, bnab_time, outpath):
-    '''
-    :param infile: csv file with format like that produced by loop_stats.py or calc_divergence.py
-    :param name: string of prefix for graph files
-    :param vl: (bool) transform frequency data by viral load
+    """
+
+    :param vl_file: csv file with format like that produced by loop_stats.py or calc_divergence.py
+    :param ab_time: (int) time point that nAbs emerge
+    :param bnab_time: (int) time point that bnAbs emerge
+    :param outpath: (str) path to output folder
     :return: writes graphs to file depending on what columns are present in csv file
-    '''
+    """
+
+    infile = os.path.abspath(infile)
+    outpath = os.path.abspath(outpath)
 
     mpl.rc('font', serif='Arial')
     mpl.rcParams['font.family'] = 'Arial'

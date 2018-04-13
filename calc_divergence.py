@@ -6,29 +6,50 @@ import os
 import sys
 import collections
 import argparse
-import regex
-from Bio import SeqIO
-from glob import glob
+from itertools import groupby
+
 
 __author__ = 'colin'
 
 
-def fasta_to_dct(fn):
-    '''
-    :param fn: a fasta file
-    :return: a dictionary
-    '''
-    dct = collections.OrderedDict()
-    for seq_record in SeqIO.parse(open(fn), "fasta"):
-        dct[seq_record.description.replace(" ", "_")] = str(seq_record.seq).replace("~", "-").upper()
+def py3_fasta_iter(fasta_name):
+    """
+    modified from Brent Pedersen: https://www.biostars.org/p/710/#1412
+    given a fasta file. yield tuples of header, sequence
+    """
+    fh = open(str(fasta_name), 'r')
+    faiter = (x[1] for x in groupby(fh, lambda line: line[0] == ">"))
+    for header in faiter:
+        # drop the ">"
+        header_str = header.__next__()[1:].strip()
+        # join all sequence lines to one.
+        seq = "".join(s.strip() for s in faiter.__next__())
+        yield (header_str, seq)
+
+
+def fasta_to_dct(file_name):
+    """
+    :param file_name: The fasta formatted file to read from.
+    :return: a dictionary of the contents of the file name given. Dictionary in the format:
+    {sequence_id: sequence_string, id_2: sequence_2, etc.}
+    """
+    dct = collections.defaultdict(str)
+    my_gen = py3_fasta_iter(file_name)
+    for k, v in my_gen:
+        new_key = k.replace(" ", "_")
+        if new_key in dct.keys():
+            print("Duplicate sequence ids found. Exiting")
+            raise KeyError("Duplicate sequence ids found")
+        dct[new_key] = str(v).replace("~", "_").upper()
+
     return dct
 
 
 def gethxb2(dict):
-    '''
+    """
     :param dict: a dictionary of your aligned input sequences. Must contain HXB2, with HXB2 in the header
     :return: the HXB2 sequence as a string
-    '''
+    """
     found = False
     hxb2_seq = None
     hxb2_key = None
@@ -98,9 +119,9 @@ def main(ref, align_file, outpath, name):
     outfile = os.path.join(outpath, name)
 
     # import the reference
-    ref = SeqIO.read(ref, "fasta")
-    refseq = str(ref.seq).upper()
-
+    ref = fasta_to_dct(ref)
+    ref_seq = str(list(ref.values())[0]).upper()
+    ref_name = str(list(ref.keys())[0])
     # store all sequnces in a dict
     all_sequences = fasta_to_dct(align_file)
 
@@ -114,14 +135,14 @@ def main(ref, align_file, outpath, name):
 
     # calculate the divergence from the reference for each sequnce
     for seq_name, seq in sorted(all_sequences.items()):
-        if len(seq) != len(refseq):
+        if len(seq) != len(ref_seq):
             print("input sequence and reference sequence were not the same length.")
             sys.exit()
         else:
             time = seq_name.split("_")[2][:-3]
 
-            # hamdist = distance.hamming(seq, refseq, normalized=True)
-            normadjustdist_perc = round(normcustomdist(seq, refseq) * 100, 2)
+            # hamdist = distance.hamming(seq, ref_seq, normalized=True)
+            normadjustdist_perc = round(normcustomdist(seq, ref_seq) * 100, 2)
 
             with open(outfile, "a") as handle:
                 handle.write(",".join([str(x) for x in [time, normadjustdist_perc,  seq_name]]) + "\n")

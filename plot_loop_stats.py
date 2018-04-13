@@ -12,13 +12,15 @@ __author__ = 'colin.anthony001@gmail.com'
 
 
 def transform_df_by_vl(headers, item, df, vl_file, participant):
-    '''
+    """
+
     :param headers: column header to plot on x axis data (Time (weeks))
     :param df: dataframe with headers
     :param dcn: dictionary of Time (weeks):viral load
     :param vl: (bool) transform frequency data by viral load
     :return: new data frame, with columns for freq in counts and freq in copies of virus
-    '''
+    """
+
     time = headers[0]
     df_test = df.copy(deep=True)
     df_test.drop(['sequence_id'], inplace=True, axis=1)
@@ -52,7 +54,7 @@ def transform_df_by_vl(headers, item, df, vl_file, participant):
 
 
 def plot_loop_stats(headers, item, df, outfile, ab_time, bnab_time, av_heads, avdf, vl_file):
-    '''
+    """
     :param headers: x axis header
     :param item: y axis header
     :param df: dataframe containing the data
@@ -60,7 +62,7 @@ def plot_loop_stats(headers, item, df, outfile, ab_time, bnab_time, av_heads, av
     :param ab_time: int of time point label 1
     :param bnab_time: int of time point label 2
     :return: writes figures to file
-    '''
+    """
     n = item.replace(" ", "_")
     outname = outfile + "_" + n
     print("outfile is :", outname)
@@ -131,7 +133,7 @@ def plot_loop_stats(headers, item, df, outfile, ab_time, bnab_time, av_heads, av
 
 
 def main(infile, vl_file, name, outpath, ab_time, bnab_time):
-    '''
+    """
     :param infile: csv file with format like that produced by loop_stats.py
     :param name: string of prefix for graph files
     :param outpath: the output path for plots to be created at.
@@ -139,8 +141,11 @@ def main(infile, vl_file, name, outpath, ab_time, bnab_time):
     :param bnab_time: int of time point label 2
     :param vl: (bool) transform frequency data by viral load
     :return: writes graphs to file depending on what columns are present in csv file
-    '''
+    """
     print(infile)
+
+    infile = os.path.abspath(infile)
+    outpath = os.path.abspath(outpath)
 
     outfile1 = os.path.join(outpath, name)
     mpl.rc('font', serif='Arial')
@@ -151,16 +156,17 @@ def main(infile, vl_file, name, outpath, ab_time, bnab_time):
     headers = list(df)
     participant = name.split("_")[0]
 
-    for item in headers[1:-1]:
-        print(item)
-        ndf = transform_df_by_vl(headers, item, df, vl_file, participant)
-        sum_av_dist = df.groupby([headers[0]]).agg({item: ['mean', 'std']})
-        av_vals = pd.DataFrame(sum_av_dist.to_records())
-        av_heads = list(av_vals)
-        av_vals.rename(columns={av_heads[0]: av_heads[0], av_heads[1]: 'mean', av_heads[2]: 'std'}, inplace=True)
-        av_vals.to_csv(outfile1 + "_" + str(item) + "_av.csv", sep=",", index=False)
-        av_headers = list(av_vals)
-        plot_loop_stats(headers[0], item, ndf, outfile1, ab_time, bnab_time, av_headers, av_vals, vl_file)
+    for item in headers[1:]:
+        if item != 'sequence_id':
+            print(item)
+            ndf = transform_df_by_vl(headers, item, df, vl_file, participant)
+            sum_av_dist = df.groupby([headers[0]]).agg({item: ['mean', 'std']})
+            av_vals = pd.DataFrame(sum_av_dist.to_records())
+            av_heads = list(av_vals)
+            av_vals.rename(columns={av_heads[0]: av_heads[0], av_heads[1]: 'mean', av_heads[2]: 'std'}, inplace=True)
+            av_vals.to_csv(outfile1 + "_" + str(item) + "_av.csv", sep=",", index=False)
+            av_headers = list(av_vals)
+            plot_loop_stats(headers[0], item, ndf, outfile1, ab_time, bnab_time, av_headers, av_vals, vl_file)
 
     print('Done')
 

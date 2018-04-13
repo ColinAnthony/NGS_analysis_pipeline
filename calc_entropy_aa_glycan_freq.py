@@ -4,31 +4,52 @@ from __future__ import division
 import argparse
 import numpy as np
 import collections
-from Bio import SeqIO
+from itertools import groupby
 import os
 import regex
-import pandas as pd
-import sys
-__author__ = 'colin.anthony001@gmail.com'
 
 
+__author__ = 'colin.anthony'
 
-def fasta_to_dct(fn):
-    '''
-    :param fn: a fasta file
-    :return: a dictionary
-    '''
-    dct = collections.OrderedDict()
-    for seq_record in SeqIO.parse(open(fn), "fasta"):
-        dct[seq_record.description.replace(" ", "_")] = str(seq_record.seq).replace("~", "-").upper()
+
+def py3_fasta_iter(fasta_name):
+    """
+    modified from Brent Pedersen: https://www.biostars.org/p/710/#1412
+    given a fasta file. yield tuples of header, sequence
+    """
+    fh = open(str(fasta_name), 'r')
+    faiter = (x[1] for x in groupby(fh, lambda line: line[0] == ">"))
+    for header in faiter:
+        # drop the ">"
+        header_str = header.__next__()[1:].strip()
+        # join all sequence lines to one.
+        seq = "".join(s.strip() for s in faiter.__next__())
+        yield (header_str, seq)
+
+
+def fasta_to_dct(file_name):
+    """
+    :param file_name: The fasta formatted file to read from.
+    :return: a dictionary of the contents of the file name given. Dictionary in the format:
+    {sequence_id: sequence_string, id_2: sequence_2, etc.}
+    """
+    dct = collections.defaultdict(str)
+    my_gen = py3_fasta_iter(file_name)
+    for k, v in my_gen:
+        new_key = k.replace(" ", "_")
+        if new_key in dct.keys():
+            print("Duplicate sequence ids found. Exiting")
+            raise KeyError("Duplicate sequence ids found")
+        dct[new_key] = str(v).replace("~", "_")
+
     return dct
 
 
 def gethxb2(dict):
-    '''
+    """
     :param dict: a dictionary of your aligned input sequences. Must contain HXB2, with HXB2 in the header
     :return: the HXB2 sequence as a string
-    '''
+    """
     found = False
     hxb2_seq = None
     hxb2_key = None
@@ -129,13 +150,13 @@ def reorder_freq_dict(master_profile, pos_num):
 
 
 def jsd(t1, t2, pos, time):  # Jensen-shannon divergence
-    '''
+    """
     :param t1: list of AA/DNA frequencies for a given position and time point
     :param t2: list of AA/DNA frequencies for a given position and (time point +1)
     :param pos: The number of the sequence position
     :param time: the value for the time point (004)
     :return:
-    '''
+    """
     # adapted from @author: jonathanfriedman
     import warnings
     warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -154,12 +175,12 @@ def jsd(t1, t2, pos, time):  # Jensen-shannon divergence
 
 
 def shannon(t, pos, time):
-    '''
+    """
     :param t: list of AA/DNA frequencies for a given position and time point
     :param pos: The number of the sequence position
     :param time: the value for the time point (004)
     :return:
-    '''
+    """
     import warnings
     warnings.filterwarnings("ignore", category=RuntimeWarning)
     entropy = 0.0
@@ -177,12 +198,12 @@ def shannon(t, pos, time):
 
 
 def glyc_finder(d, pos_num, outfile):
-    '''
+    """
     :param d: dictionary of aligned protein sequences
     :param pos_num: list of HXB2 number codes for the alignment
     :param outfile: string for the outfile
     :return: None, writes csv file of glycan frequencies over time
-    '''
+    """
 
     regex_pattern = 'N[\-]*[^P\-][\-]*[TS][^P]'
     master_profile = collections.OrderedDict()

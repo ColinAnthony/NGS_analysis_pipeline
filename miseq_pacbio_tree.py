@@ -4,8 +4,9 @@ import argparse
 import sys, os
 import collections
 from itertools import groupby
+
 try:
-    from ete3 import Tree, faces, TreeStyle, NodeStyle, TreeNode, add_face_to_node,  SequenceFace, SeqMotifFace
+    from ete3 import Tree, faces, TreeStyle, NodeStyle, TreeNode, add_face_to_node, SequenceFace, SeqMotifFace
 except ImportError:
     print("Ete3 is not installed correctly. For best results, install ete3 from the anaconda distribution, "
           "as per http://etetoolkit.org/download/")
@@ -88,7 +89,6 @@ def get_time(tree, field2):
             try:
                 name = node.name.split("_")
                 t = name[field2]
-
             except:
                 t = 'zero'
                 print("incorrect name format: sequence assigned time point of 'zero")
@@ -109,12 +109,12 @@ def col_map(times):
     """
 
     colour_25 = ['#E50001', '#E32A00', '#E15700', '#E08300', '#DEAE00', '#DDD800', '#B4DB00', '#88D900',
-              '#5CD800', '#31D600', '#06D500', '#00D323', '#00D24C', '#00D075', '#00CE9D', '#00CDC4',
-               '#00ABCB', '#0082CA', '#0059C8', '#0031C6', '#000AC5', '#1C00C3', '#4200C2', '#6800C0', '#8D00BF']
-    #colour = ['#9e0142', '#d53e4f', '#f46d43', '#abdda4', '#fdae61', '#66c2a5', '#3288bd', '#5e4fa2']
-    #colour_25 = [1, 2, 5, 6, 4, 4, 1, 1]
+                 '#5CD800', '#31D600', '#06D500', '#00D323', '#00D24C', '#00D075', '#00CE9D', '#00CDC4',
+                 '#00ABCB', '#0082CA', '#0059C8', '#0031C6', '#000AC5', '#1C00C3', '#4200C2', '#6800C0', '#8D00BF']
+    # colour = ['#9e0142', '#d53e4f', '#f46d43', '#abdda4', '#fdae61', '#66c2a5', '#3288bd', '#5e4fa2']
+    # colour_25 = [1, 2, 5, 6, 4, 4, 1, 1]
     other = ['#1a1a1a', '#E50001']
-    #colour_25 = [colour[0], colour[1], colour[1], colour[2], colour[2], colour[2], colour[2], colour[2],
+    # colour_25 = [colour[0], colour[1], colour[1], colour[2], colour[2], colour[2], colour[2], colour[2],
     #             colour[3], colour[3], colour[3], colour[3], colour[3], colour[3], colour[4], colour[4],
     #             colour[4], colour[4], colour[5], colour[5], colour[5], colour[5], colour[6], colour[7]]
 
@@ -125,7 +125,7 @@ def col_map(times):
     if 'zero' in times:
         n_colors = n_colors - 1
 
-    step = l//n_colors
+    step = l // n_colors
 
     j = 0
     cd = collections.OrderedDict()
@@ -236,14 +236,14 @@ def bub_tree(tree, fasta, outfile1, root, types, c_dict, show, size,
         bg_c = None
         fg_c = None
 
-    #outfile3 = str(outfile1.replace(".svg", ".nwk"))
+    # outfile3 = str(outfile1.replace(".svg", ".nwk"))
 
     tstyle = TreeStyle()
     tstyle.force_topology = False
     tstyle.mode = types
     tstyle.scale = scale
     tstyle.min_leaf_separation = 0
-    tstyle.optimal_scale_level = 'full' #'mid'
+    tstyle.optimal_scale_level = 'full'  # 'mid'
     # tstyle.complete_branch_lines_when_necessary = False
     if types == 'c':
         tstyle.root_opening_factor = 0.25
@@ -256,7 +256,7 @@ def bub_tree(tree, fasta, outfile1, root, types, c_dict, show, size,
     tstyle.show_branch_support = False
     TreeNode(format=0, support=True)
     # tnode = TreeNode()
-    
+
     if root is not None:
         tree.set_outgroup(root)
     # else:
@@ -270,9 +270,8 @@ def bub_tree(tree, fasta, outfile1, root, types, c_dict, show, size,
             try:
                 name = node.name.split("_")
                 time = name[field2]
-                kind = name[5]
-
-                #print(name)
+                kind = name[3]
+                # print(name)
             except:
                 time = 'zero'
                 name = node.name
@@ -287,17 +286,9 @@ def bub_tree(tree, fasta, outfile1, root, types, c_dict, show, size,
             else:
                 s = 20
 
-
             colour = c_dict[time]
             time_col.append((time, colour))
             nstyle = NodeStyle()
-            if kind == 'NGS':
-                nstyle["shape"] = "circle"
-            elif kind == 'SGA':
-                nstyle["shape"] = "square"
-            else:
-                nstyle["shape"] = "square"
-
             nstyle["fgcolor"] = colour
             nstyle["size"] = s
             nstyle["hz_line_width"] = 10
@@ -308,9 +299,9 @@ def bub_tree(tree, fasta, outfile1, root, types, c_dict, show, size,
             nstyle["vt_line_type"] = 0
             node.set_style(nstyle)
 
-            if root is not None and node.name == root: #place holder in case you want to do something with the root leaf
+            if root is not None and node.name == root:  # place holder in case you want to do something with the root leaf
                 print('root is ', node.name)
-                #nstyle["shape"] = "square"
+                # nstyle["shape"] = "square"
                 # nstyle["fgcolor"] = "black"
                 # nstyle["size"] = s
                 # nstyle["shape"] = "circle"
@@ -346,21 +337,23 @@ def bub_tree(tree, fasta, outfile1, root, types, c_dict, show, size,
 
     for tm, clr in legendkey:
         tstyle.legend.add_face(faces.CircleFace(30, clr), column=0)
-        tstyle.legend.add_face(faces.TextFace('\t' + tm, ftype='Arial', fsize=60, fgcolor='black', tight_text=True), column=1)
+        tstyle.legend.add_face(faces.TextFace('\t' + tm, ftype='Arial', fsize=60, fgcolor='black', tight_text=True),
+                               column=1)
     if show is True:
         tree.show(tree_style=tstyle)
 
     tree.render(outfile1, dpi=600, tree_style=tstyle)
-    #tree.write(format=1, outfile=outfile3) #nwk tree file
+    # tree.write(format=1, outfile=outfile3) #nwk tree file
 
 
-def main(infile, fasta, outpath, name, root, types, show, size, colours, field1, field2, scale, multiplier, dna, consens):
+def main(infile, fasta, outpath, name, root, types, show, size, colours, field1, field2, scale, multiplier, dna,
+         consens):
     print(infile)
 
     infile = os.path.abspath(infile)
     outpath = os.path.abspath(outpath)
 
-    name = name + '.svg' # #svg, pdf or png possible
+    name = name + '.svg'  # #svg, pdf or png possible
     outfile = os.path.join(outpath, name)
     if fasta is not None:
         dc = fasta_to_dct(fasta)
@@ -389,7 +382,8 @@ def main(infile, fasta, outpath, name, root, types, show, size, colours, field1,
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='render a phylogenetic tree from a newark file and fasta '
-                                        'sequence (optional', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+                                                 'sequence (optional',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-i', '--infile', type=str,
                         help='The input newick tree file', default=argparse.SUPPRESS, required=True)
     parser.add_argument('-f', '--fasta', type=str,
@@ -404,7 +398,7 @@ if __name__ == "__main__":
                         help='the sequence to use as the consensus for highlighter plot', required=False)
     parser.add_argument('-t', '--types', type=str, default='r',
                         help='default is regular tree, for circular tree use "-t c"', required=False)
-    parser.add_argument('-s', '--show', default=False,  action='store_true',
+    parser.add_argument('-s', '--show', default=False, action='store_true',
                         help='show tree', required=False)
     parser.add_argument('-z', '--size', default=False, action='store_true',
                         help='do the sequence names have frequency information at last "_" separated field',

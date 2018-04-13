@@ -1,19 +1,10 @@
-#!/usr/bin/python
 from __future__ import print_function
 from __future__ import division
 import argparse
 import os
-import sys
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-from matplotlib.ticker import AutoMinorLocator
-import matplotlib.cm as cm
-import numpy as np
-import matplotlib.patches as mpatches
-import matplotlib.lines as mlines
-from pprint import pprint
-import collections
 
 
 __author__ = 'colin'
@@ -31,14 +22,6 @@ def transform_df_by_vl(headers, df, vl_file, participant):
     item = headers[1]
 
     test_df = df.copy(deep=True)
-    test_df.drop(['sequence_id'], inplace=True, axis=1)
-    ndf = test_df.groupby(time)[item].value_counts().reset_index(name='count')
-
-    total = test_df.groupby(time).agg({time: 'count'})
-    total.rename(columns={time: time, time: 'total'}, inplace=True)
-    total = total.reset_index()
-    df1 = ndf.merge(total[[time, 'total']], on=[time])
-    df1["frequency"] = ndf['count'] / df1['total'] * 100
 
     if vl_file is not None:
         # read in the viral load data
@@ -52,17 +35,16 @@ def transform_df_by_vl(headers, df, vl_file, participant):
         participant_vl['Time'] = participant_vl.loc[:, 'Time'].astype(int)
         participant_vl['viral_load'] = participant_vl.loc[:, 'viral_load'].astype(str).astype(int)
         participant_vl.drop(["participant_id"], inplace=True, axis=1)
-        df2 = df1.merge(participant_vl, on=[time])
-        df2["frequency"] = df2['count'] / df2['total'] * 100
-        df2['freq_viral_copies'] = (df2["frequency"] / 100) * df2['viral_load']
+        df2 = test_df.merge(participant_vl, on=[time])
+        df2['freq_viral_copies'] = df2["Frequency"] * df2['viral_load']
         df2.to_csv("wrangled_df.csv", sep=',')
 
         return df2
     else:
-        return df1
+        return test_df
 
 
-def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, av_heads, av_df, vl_file):
+def divergence_plotter(headers, df, name, outfile, ab_time, bnab_time, vl_file):
     """
     :param headers: x axis header
     :param item: y axis header
@@ -71,27 +53,27 @@ def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, av_heads,
     :param vl_file:
     :return: prints graphs to file
     """
-    outname = name + "_divergence.png"
-    outfile = os.path.join(outpath, outname)
-    print("outfile is:", outfile)
 
-    x_header = headers[0]
-    y_header = headers[1]
-
-    participants_list = list(set(df[x_header]))
-    num_participants = len(participants_list)
-    participant_d = {participants: n for n, participants in enumerate(participants_list)}
-    df["plot_x"] = df[x_header].map(participant_d)
-
-    # use rank instead??
-    title = name
-    max_divergence_series = df.groupby(x_header)[y_header].max()
-    df['colour'] = df[x_header].map(max_divergence_series)
-
-    ymax = int(max(df[y_header]) * 1.15)
+    ymax = 101
+    xmax = 30
     ymin = 0
+    xmin = 0
+    selection_bound = 10
+    x_step = int(xmax/10.0)
+    # fiter the dataframe to only those haplotypes which are greater than the % selection bound and up to time xmax
 
-    df.sort_values(by=["colour"], inplace=True, ascending=True)
+    # set haplotypes as column headers
+    piv_df = df.pivot(index=headers[0], columns=headers[1])
+
+    # reset time as column not index
+    piv_df.reset_index(level=0, inplace=True)
+
+    # filter by desited xaxis time point
+    filt_df = piv_df[(piv_df.Time <= xmax)]
+
+    # filter by those column with xmax > selection and xmin < 100 - selection
+    new_df = filt_df.loc[:, (filt_df.max() >= selection_bound) & (filt_df.min() <= 100 - selection_bound)]
+    new_df.fillna(value=0)
 
     # set axes
     fig, ax = plt.subplots(1, 1)
@@ -104,35 +86,48 @@ def divergence_plotter(headers, df, name, outpath, ab_time, bnab_time, av_heads,
     ax.get_yaxis().tick_left()
     ax.set_facecolor('white')
 
-    x = df["plot_x"]
-    x_ticks = df[x_header]
-    plt.xticks(x, x_ticks, rotation=90)
-    plt.ylim(ymin, ymax)
+    new_df.set_index("Time", inplace=True)
 
-    # plot the data
-    if vl_file is None:
-        ax.scatter(df["plot_x"], df[y_header], alpha=0.6, s=df["frequency"]*10, c=df["colour"], edgecolor='black', lw=0.5, zorder=2)
-    else:
-        ax.scatter(df["plot_x"], df[y_header], alpha=0.6, s=df["freq_viral_copies"]/10, c=df["colour"], edgecolor='black', lw=0.5, zorder=2)
+    new_df.columns = new_df.columns.get_level_values(1)
+    new_df.plot(kind='line', style='.-')
 
-    plt.ylabel("Divergence from major variant (%)", fontsize=24, labelpad=14)
+    plt.legend(frameon=False, framealpha=False,bbox_to_anchor=(1.01, 0.901))
+
+    plt.ylim(ymin, ymax + 1)
+    plt.xlim(xmin, xmax)
+    plt.yticks(list(range(ymin, ymax, 20)), fontsize=14)
+    plt.xticks(list(range(xmin, xmax, x_step)), fontsize=14)
+
+    plt.ylabel("Frequency (%)", fontsize=24, labelpad=14)
     plt.xlabel("Weeks post infection", fontsize=24, labelpad=12)
+
+    # add annotations for nAb time points
+    if ab_time is not None:
+        plt.text(ab_time, ymax, ' ssNAb', horizontalalignment='left', verticalalignment='center', fontsize=10)
+        ax.axvline(x=ab_time, color='black', ls='dotted', lw=1, zorder=1)
+
+    if bnab_time is not None:
+        plt.text(bnab_time, ymax, ' bNAb', horizontalalignment='left', verticalalignment='center', fontsize=10)
+        plt.axvline(x=bnab_time, color='black', ls='dotted', lw=1, zorder=1)
 
     w = 6.875
     h = 4
     f = plt.gcf()
     f.set_size_inches(w, h)
-
+    # plt.show()
     plt.savefig(outfile, ext='png', dpi=600, format='png', facecolor='white', bbox_inches='tight')
 
 
 def main(infile, vl_file, name, ab_time, bnab_time, outpath):
     """
-    :param infile: csv file with format like that produced by loop_stats.py or calc_divergence.py
-    :param name: string of prefix for graph files
-    :param vl: (bool) transform frequency data by viral load
+
+    :param vl_file: csv file with format like that produced by loop_stats.py or calc_divergence.py
+    :param ab_time: (int) time point that nAbs emerge
+    :param bnab_time: (int) time point that bnAbs emerge
+    :param outpath: (str) path to output folder
     :return: writes graphs to file depending on what columns are present in csv file
     """
+
     infile = os.path.abspath(infile)
     outpath = os.path.abspath(outpath)
 
@@ -141,21 +136,21 @@ def main(infile, vl_file, name, ab_time, bnab_time, outpath):
     data = pd.read_csv(infile, sep=',', header=0, parse_dates=True)
     df = pd.DataFrame(data)
     df.fillna(method='ffill', inplace=True)
-
     headers = list(df)
     participant = name.split("_")[0]
 
     ndf = transform_df_by_vl(headers, df, vl_file, participant)
+    headers = list(ndf)
+    outfile = os.path.join(outpath, name + "_multi_site_site.png")
 
-    outfile1 = os.path.join(outpath, name + "_av_distance.csv")
-    sum_av_dist = df.groupby([headers[0]]).agg({headers[1]: ['mean', 'std']})
-    av_vals = pd.DataFrame(sum_av_dist.to_records())
-    av_heads = list(av_vals)
-    av_vals.rename(columns={av_heads[0]: av_heads[0], av_heads[1]: 'mean', av_heads[2]: 'std'}, inplace=True)
-    av_vals.to_csv(outfile1 + "_" + str(headers[1]) + "_av_loop_stats.csv", sep=",", index=False)
-    av_headers = list(av_vals)
+    # sum_av_dist = df.groupby([headers[0]]).agg({headers[1]: ['mean', 'std']})
+    # av_vals = pd.DataFrame(sum_av_dist.to_records())
+    # av_heads = list(av_vals)
+    # av_vals.rename(columns={av_heads[0]: av_heads[0], av_heads[1]: 'mean', av_heads[2]: 'std'}, inplace=True)
+    # av_vals.to_csv(outfile1 + "_" + str(headers[1]) + "_av_loop_stats.csv", sep=",", index=False)
+    # av_headers = list(av_vals)
 
-    divergence_plotter(headers, ndf, name, outpath, ab_time, bnab_time, av_headers, av_vals, vl_file)
+    divergence_plotter(headers, ndf, name, outfile, ab_time, bnab_time, vl_file)
 
 
 if __name__ == "__main__":
