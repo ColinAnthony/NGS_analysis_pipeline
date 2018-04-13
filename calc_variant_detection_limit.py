@@ -92,7 +92,7 @@ if __name__ == "__main__":
                              'if you ran the NGS_processing_pipeline')
     parser.add_argument('-o', '--outpath', type=str, required=True,
                         help='The path to where the output file should go')
-    parser.add_argument('-f', '--freq', type=float, default=1, required=True,
+    parser.add_argument('-f', '--freq', type=float, default=1, required=False,
                         help='The percent frequency threshold of the variant to detect')
 
     args = parser.parse_args()

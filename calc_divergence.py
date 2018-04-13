@@ -40,7 +40,7 @@ def fasta_to_dct(file_name):
         if new_key in dct.keys():
             print("Duplicate sequence ids found. Exiting")
             raise KeyError("Duplicate sequence ids found")
-        dct[new_key] = str(v).replace("~", "_")
+        dct[new_key] = str(v).replace("~", "_").upper()
 
     return dct
 
