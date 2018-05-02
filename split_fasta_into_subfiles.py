@@ -63,7 +63,7 @@ def gethxb2(dictionary):
         print("We could not find a sequence with 'HXB2' in its name. "
               "Please make sure you have an HXB2 ref. seq. included")
 
-    return str(hxb2_key), str(hxb2_seq)
+    return hxb2_key, str(hxb2_seq)
 
 
 def main(infile, outpath, field):
