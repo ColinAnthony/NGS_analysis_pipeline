@@ -53,7 +53,7 @@ def hapl_collapse(fastafile, seq_name_pre, outfile):
     # import seqs to dict and get count of each unique sequence
     total = 0
     dct = collections.defaultdict(int)
-    for seq_name, seq in py3_fasta_iter(fastafile):
+    for seq_name, seq in fasta_to_dct(fastafile):
         dct[str(seq).upper()] += 1
         total += 1
 
@@ -91,10 +91,10 @@ def main(infile, outpath, field):
         os.unlink(out)
 
     # get prefix for sequence names from infile name
-    seq_name = "_".join(name.split("_")[:field])
+    seq_name_pref = "_".join(name.split("_")[:field])
 
     # run the haplotyping function
-    hapl_collapse(infile, seq_name, out)
+    hapl_collapse(infile, seq_name_pref, out)
 
     print("Done haplotyping")
 
