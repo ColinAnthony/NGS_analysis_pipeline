@@ -42,7 +42,7 @@ def fasta_to_dct(file_name):
     return dct
 
 
-def hapl_collapse(fastafile, seq_name, outfile):
+def hapl_collapse(fastafile, seq_name_pre, outfile):
     """
     Haplotype a fasta file by collapsing identical sequences into a single sequence with a frequency count.
     :param fastafile: input fasta file
@@ -69,7 +69,7 @@ def hapl_collapse(fastafile, seq_name, outfile):
     for counter, sequence in enumerate(sorted_sequences_by_count):
         frq = round(dct[sequence] / float(total), 3)
         num = str(counter).zfill(3)
-        n = seq_name + "_" + str(num) + "_" + str(frq)
+        n = seq_name_pre + "_" + str(num) + "_" + str(frq)
 
         # write the haplotyped sequence to file
         with open(outfile, "a") as handle:
@@ -90,11 +90,8 @@ def main(infile, outpath, field):
         print("{0} file already exists, overwriting file".format(out))
         os.unlink(out)
 
-    # adjust field for python zero indexing
-    adjust_field = field + 1
-
     # get prefix for sequence names from infile name
-    seq_name = "_".join(name.split("_")[:adjust_field])
+    seq_name = "_".join(name.split("_")[:field])
 
     # run the haplotyping function
     hapl_collapse(infile, seq_name, out)
