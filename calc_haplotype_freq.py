@@ -53,7 +53,7 @@ def hapl_collapse(fastafile, seq_name_pre, outfile):
     # import seqs to dict and get count of each unique sequence
     total = 0
     dct = collections.defaultdict(int)
-    for seq_name, seq in fasta_to_dct(fastafile):
+    for seq_name, seq in fasta_to_dct(fastafile).items():
         dct[str(seq).upper()] += 1
         total += 1
 
