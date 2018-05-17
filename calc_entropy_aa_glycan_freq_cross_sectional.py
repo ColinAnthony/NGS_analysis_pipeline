@@ -265,6 +265,8 @@ def main(infile, outpath, dna, start, name):
     glycan_outfile = os.path.join(outpath, "glycans", glyc_out_name)
 
     d = fasta_to_dct(infile)
+    for k in d.keys():
+        d[k] = d[k].upper()
     hxb2key, hxb2seq = gethxb2(d)
     del d[hxb2key]
 
