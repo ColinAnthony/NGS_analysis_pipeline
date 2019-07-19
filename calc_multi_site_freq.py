@@ -1,8 +1,6 @@
-from __future__ import print_function
-from __future__ import division
 import argparse
 import collections
-import os
+import pathlib
 import sys
 from itertools import groupby
 
@@ -108,12 +106,12 @@ def posnumcalc(hxb2seq, start):
 def main(infile, outpath, posis, name, start):
     print(infile)
 
-    infile = os.path.abspath(infile)
-    outpath = os.path.abspath(outpath)
+    infile = pathlib.Path(infile).absolute()
+    outpath = pathlib.Path(outpath).absolute()
 
     # construct outfile string
     nam = name + ".csv"
-    outfile = os.path.join(outpath, nam)
+    outfile = pathlib.Path(outpath, nam)
 
     # initialise outfile with headers (overwrites pre-existing file)
     with open(outfile, 'w') as handle:
@@ -123,7 +121,7 @@ def main(infile, outpath, posis, name, start):
     hxb2key, hxb2seq = gethxb2(d)
     try:
         del d[hxb2key]
-    except:
+    except KeyError:
         sys.exit("No HXB2 sequence in file, can't assign numbering, exiting")
 
     # get indexs for positions of interest
@@ -180,7 +178,7 @@ def main(infile, outpath, posis, name, start):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Calculate the frequency of several positions as a haplotype',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-i', '--infile', default=argparse.SUPPRESS, type=str,
+    parser.add_argument('-in', '--infile', default=argparse.SUPPRESS, type=str,
                         help='The input fasta file, with all the time points in one file', required=True)
     parser.add_argument('-o', '--outpath', default=argparse.SUPPRESS, type=str,
                         help='The path to where the output file will be created', required=True)
