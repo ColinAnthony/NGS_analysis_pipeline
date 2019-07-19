@@ -1,13 +1,10 @@
-#!/usr/bin/python3
-from __future__ import print_function
-from __future__ import division
 import os
 import argparse
 import collections
 from itertools import groupby
 
 
-__author__ = 'colin.anthony'
+__author__ = 'colin anthony'
 
 
 def py3_fasta_iter(fasta_name):
@@ -107,7 +104,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Splits a fasta file into multiple fasta files, '
                                                  'based on a unique field in the fasta headers)',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-i', '--infile', type=str, required=True,
+    parser.add_argument('-in', '--infile', type=str, required=True,
                         help='The input fasta file')
     parser.add_argument('-o', '--outpath', default=argparse.SUPPRESS, type=str,
                         help='The path to where the output file will be created', required=True)

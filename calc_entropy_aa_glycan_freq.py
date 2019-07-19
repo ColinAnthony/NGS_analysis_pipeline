@@ -1,6 +1,3 @@
-#!/usr/bin/python2
-from __future__ import print_function
-from __future__ import division
 import argparse
 import numpy as np
 import collections
@@ -344,7 +341,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Calculate the Jensen-Shannon entropy for a '
                                                  'longitudinal sequence alignment',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-i', '--infile', default=argparse.SUPPRESS, type=str,
+    parser.add_argument('-in', '--infile', default=argparse.SUPPRESS, type=str,
                         help='The input fasta file, with all the time points in one file', required=True)
     parser.add_argument('-o', '--outpath', default=argparse.SUPPRESS, type=str,
                         help='The parent path containing the aa_freq, entropy and glycans subfolders. '
@@ -364,3 +361,4 @@ if __name__ == "__main__":
     name = args.name
 
     main(infile, outpath, dna, start, name)
+

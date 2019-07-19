@@ -85,13 +85,12 @@ def get_time(tree, field2):
     times = []
     for node in tree.traverse():
         if node.is_leaf() == True:
+            name = node.name.split("_")
             try:
-                name = node.name.split("_")
                 t = name[field2]
-
             except:
                 t = 'zero'
-                print("incorrect name format: sequence assigned time point of 'zero")
+                print("incorrect name format: sequence assigned time point of 'zero", node.name)
 
             if t not in times:
                 times.append(t)
@@ -113,7 +112,7 @@ def col_map(times):
                '#00ABCB', '#0082CA', '#0059C8', '#0031C6', '#000AC5', '#1C00C3', '#4200C2', '#6800C0', '#8D00BF']
     #colour = ['#9e0142', '#d53e4f', '#f46d43', '#abdda4', '#fdae61', '#66c2a5', '#3288bd', '#5e4fa2']
     #colour_25 = [1, 2, 5, 6, 4, 4, 1, 1]
-    other = ['#1a1a1a', '#E50001']
+    other = ['#c6274a', '#42c2f4']
     #colour_25 = [colour[0], colour[1], colour[1], colour[2], colour[2], colour[2], colour[2], colour[2],
     #             colour[3], colour[3], colour[3], colour[3], colour[3], colour[3], colour[4], colour[4],
     #             colour[4], colour[4], colour[5], colour[5], colour[5], colour[5], colour[6], colour[7]]
@@ -143,12 +142,12 @@ def col_map(times):
     return cd
 
 
-def bub_tree(tree, fasta, outfile1, root, types, c_dict, show, size,
+def bub_tree(tree, fasta, outfile, root, types, c_dict, show, size,
              colours, field1, field2, scale, multiplier, dna):
     """
     :param tree: tree object from ete
     :param fasta: the fasta file used to make the tree
-    :param outfile1: outfile suffix
+    :param outfile: outfile suffix
     :param root: sequence name to use as root
     :param types: tree type: circular (c) or rectangle (r)
     :param c_dict: dictionary mapping colour to time point (from col_map)
@@ -236,8 +235,6 @@ def bub_tree(tree, fasta, outfile1, root, types, c_dict, show, size,
         bg_c = None
         fg_c = None
 
-    #outfile3 = str(outfile1.replace(".svg", ".nwk"))
-
     tstyle = TreeStyle()
     tstyle.force_topology = False
     tstyle.mode = types
@@ -264,19 +261,12 @@ def bub_tree(tree, fasta, outfile1, root, types, c_dict, show, size,
     #     print("r", r)
     #     tree.set_outgroup(r)
     time_col = []
+    tree.ladderize()
     for node in tree.traverse():
-        # node.ladderize()
+        node.ladderize()
         if node.is_leaf() is True:
-            try:
-                name = node.name.split("_")
-                time = name[field2]
-                kind = name[5]
-
-                #print(name)
-            except:
-                time = 'zero'
-                name = node.name
-                print("Incorrect name format for ", node.name)
+            name = node.name.split("_")
+            time = name[field2]
 
             if size is True:
                 try:
@@ -287,17 +277,10 @@ def bub_tree(tree, fasta, outfile1, root, types, c_dict, show, size,
             else:
                 s = 20
 
-
             colour = c_dict[time]
             time_col.append((time, colour))
             nstyle = NodeStyle()
-            if kind == 'NGS':
-                nstyle["shape"] = "circle"
-            elif kind == 'SGA':
-                nstyle["shape"] = "square"
-            else:
-                nstyle["shape"] = "square"
-
+            nstyle["shape"] = "circle"
             nstyle["fgcolor"] = colour
             nstyle["size"] = s
             nstyle["hz_line_width"] = 10
@@ -317,7 +300,6 @@ def bub_tree(tree, fasta, outfile1, root, types, c_dict, show, size,
                 # node.set_style(nstyle)
 
             else:
-                nstyle["shape"] = "circle"
                 node.set_style(nstyle)
 
             if fasta is not None:
@@ -337,8 +319,7 @@ def bub_tree(tree, fasta, outfile1, root, types, c_dict, show, size,
             nstyle["vt_line_width"] = 10
             node.set_style(nstyle)
             continue
-    tree.ladderize()
-    # tnode.ladderize()
+
     legendkey = sorted(set(time_col))
     legendkey = [(tp, col) for tp, col in legendkey]
     # legendkey.insert(0, ('Root', 'black'))
@@ -350,7 +331,9 @@ def bub_tree(tree, fasta, outfile1, root, types, c_dict, show, size,
     if show is True:
         tree.show(tree_style=tstyle)
 
-    tree.render(outfile1, dpi=600, tree_style=tstyle)
+    tree.render(outfile + ".svg", dpi=600, tree_style=tstyle)
+    tree.render(outfile + ".png", dpi=600, tree_style=tstyle)
+    tree.render(outfile + ".pdf", dpi=600, tree_style=tstyle)
     #tree.write(format=1, outfile=outfile3) #nwk tree file
 
 
@@ -360,7 +343,6 @@ def main(infile, fasta, outpath, name, root, types, show, size, colours, field1,
     infile = os.path.abspath(infile)
     outpath = os.path.abspath(outpath)
 
-    name = name + '.svg' # #svg, pdf or png possible
     outfile = os.path.join(outpath, name)
     if fasta is not None:
         dc = fasta_to_dct(fasta)
@@ -388,9 +370,9 @@ def main(infile, fasta, outpath, name, root, types, show, size, colours, field1,
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='render a phylogenetic tree from a newark file and fasta '
-                                        'sequence (optional', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-i', '--infile', type=str,
+    parser = argparse.ArgumentParser(description='render a phylogenetic tree from a newick file and fasta '
+                                        'sequence (optional)', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-in', '--infile', type=str,
                         help='The input newick tree file', default=argparse.SUPPRESS, required=True)
     parser.add_argument('-f', '--fasta', type=str,
                         help='The fasta file used to make the tree', required=False, default=None)
@@ -399,7 +381,9 @@ if __name__ == "__main__":
     parser.add_argument('-n', '--name', default=argparse.SUPPRESS, type=str,
                         help='The filename for the output tree and image (with no suffix: ".png")', required=True)
     parser.add_argument('-r', '--root', default=None, type=str,
-                        help='the sequence name to root on', required=False)
+                        help='the sequence name to root on. If using an external root, it must include the '
+                             'field1 and field 2 tags, at the same index positions as the rest of the sequences',
+                        required=False)
     parser.add_argument('-con', '--cons', default=None, type=str,
                         help='the sequence to use as the consensus for highlighter plot', required=False)
     parser.add_argument('-t', '--types', type=str, default='r',

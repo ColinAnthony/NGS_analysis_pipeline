@@ -1,16 +1,11 @@
-#!/usr/bin/python
-from __future__ import print_function
-from __future__ import division
 import os
-import sys
 import argparse
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-from matplotlib.ticker import AutoMinorLocator
 
-__author__ = 'colin'
+
+__author__ = 'colin anthony'
 
 
 def line(df, out_string, item, glyc_site, ab_time, bnab_time):
@@ -96,7 +91,7 @@ def main(infile, outpath, lower, ab_time, bnab_time):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Plots the glycan sites which show variation in frequency > 1 percent')
 
-    parser.add_argument('-i', '--infile', type=str,
+    parser.add_argument('-in', '--infile', type=str,
                         help='The input .csv file', required=True)
     parser.add_argument('-o', '--outpath', type=str,
                         help='The path to where the output files will be created', required=True)

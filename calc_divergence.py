@@ -1,7 +1,3 @@
-#!/usr/bin/python
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
 import os
 import sys
 import collections
@@ -9,7 +5,7 @@ import argparse
 from itertools import groupby
 
 
-__author__ = 'colin'
+__author__ = 'colin anthony'
 
 
 def py3_fasta_iter(fasta_name):
@@ -127,8 +123,11 @@ def main(ref, align_file, outpath, name):
 
     # get hxb2 seq and remove it from the dict
     hxb2_name, hxb2_seq = gethxb2(all_sequences)
-    del all_sequences[hxb2_name]
-
+    try:
+        del all_sequences[hxb2_name]
+    except KeyError:
+        print("Could not find HXB2 in alignment")
+        sys.exit()
     # write the headings to the outfile
     with open(outfile, "w") as handle:
         handle.write("Time,Normalised_hamming_distance_adjusted_(changes_per_100_bases),sequence_id\n")
@@ -154,7 +153,7 @@ def main(ref, align_file, outpath, name):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='calculate genetic distance from a reference sequence',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-i', '--infile', type=str, required=True,
+    parser.add_argument('-in', '--infile', type=str, required=True,
                         help='The path to the fasta file (ie: /path/to/5haplotype')
     parser.add_argument('-r', '--reference', type=str, required=True,
                         help='The fasta file with only the reference sequence. '

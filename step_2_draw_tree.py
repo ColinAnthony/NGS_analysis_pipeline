@@ -1,6 +1,3 @@
-#!/usr/bin/python
-from __future__ import print_function
-from __future__ import division
 import os
 import sys
 from itertools import groupby
@@ -115,18 +112,18 @@ def main(infile, outpath, name, limit, root, sample_type):
 
     # split the aligned file into subfiles
     split_by_unique = os.path.join(script_folder, 'split_fasta_into_subfiles.py')
-    cmd1 = 'python3 {0} -i {1} -o {2}'.format(split_by_unique, infile, tree_haplotype_folder)
+    cmd1 = 'python3 {0} -in {1} -o {2}'.format(split_by_unique, infile, tree_haplotype_folder)
     subprocess.call(cmd1, shell=True)
 
     # run haplotype script on subfiles
     split_fasta_files = os.path.join(tree_haplotype_folder, "*sep.fasta")
     haplotyper = os.path.join(script_folder, 'calc_haplotype_freq.py')
     for split_fasta in glob(split_fasta_files):
-        cmd2 = 'python3 {0} -i {1} -o {2}'.format(haplotyper, split_fasta, tree_haplotype_folder)
+        cmd2 = 'python3 {0} -in {1} -o {2}'.format(haplotyper, split_fasta, tree_haplotype_folder)
         subprocess.call(cmd2, shell=True)
 
     # cat the top n haplotyped files into one file
-    out_name = name + "_top_{}hap.fasta".format(str(limit))
+    out_name = name + "_top_{0}hap.fasta".format(str(limit))
     top_hap_outfile = os.path.join(tree_analysis_folder, out_name)
     if os.path.isfile(top_hap_outfile):
         print("{0} file already exists, overwriting file".format(top_hap_outfile))
@@ -180,8 +177,8 @@ def main(infile, outpath, name, limit, root, sample_type):
     tree_script = os.path.join(script_folder, "bubble_tree.py")
     scale = 100000
 
-    cmd3 = "python3 {0} -i {1} -o {2} -n {3} -r {4} -z -v {5}".format(tree_script, tree_outfile, tree_analysis_folder,
-                                                                      tree_fig_name, root_name, scale)
+    cmd3 = "python3 {0} -in {1} -o {2} -n {3} -r {4} -z -v {5}".format(tree_script, tree_outfile, tree_analysis_folder,
+                                                                       tree_fig_name, root_name, scale)
     print("plot_script: ", cmd3)
     subprocess.call(cmd3, shell=True)
 
@@ -194,7 +191,7 @@ if __name__ == "__main__":
                                                  ' and produce a tree and image of the tree',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('-i', '--infile', default=argparse.SUPPRESS, type=str, required=True,
+    parser.add_argument('-in', '--infile', default=argparse.SUPPRESS, type=str, required=True,
                         help='The input fasta file, with all the time points in one file')
     parser.add_argument('-o', '--outpath', default=None, type=str, required=False,
                         help='the path to where the intermediate files will be created (the haplotyped files)'

@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-from __future__ import print_function
-from __future__ import division
 import argparse
 import collections
 import os
@@ -8,7 +5,7 @@ from itertools import groupby
 import regex
 
 
-__author__ = 'colin.anthony001@gmail.com'
+__author__ = 'colin anthony'
 
 
 def py3_fasta_iter(fasta_name):
@@ -73,7 +70,7 @@ def find_loop(hxb2, loopstart, loopend):
     :return: index where loop/region starts in alignment, index where loop/region ends
     """
     options = {
-    "V1start" : "(C[-]*V[-]*S[-]*L[-]*K[-]*C)",
+    "V1start" : "(L[-]*K[-]*C)",  #C[-]*V[-]*S[-]*
     "V1end" : "(C[-]*S[-]*F[-]*N[-]*I)",
     "V2start" : "(G[-]*E[-]*I[-]*K[-]*N[-]*C[-]*S)",
     "V2end" : "(C[-]*N[-]*T[-]*S[-]*V)",
@@ -137,6 +134,24 @@ def loopcharge(seq):
     return str(charge)
 
 
+def loop_all_charge(seq):
+    """
+    :param seq: a protein sequence string
+    :return: number of pos and neg charged residues in the loop
+    """
+    charge_pos = 0
+    charge_neg = 0
+    pos = {"R": 1, "K": 1, "H": 1}
+    neg = {"E": -1, "D": -1}
+    for item in seq:
+        if item in pos.keys():
+            charge_pos += pos[item]
+        elif item in neg.keys():
+            charge_neg += neg[item]
+
+    return charge_pos, charge_neg
+
+
 def loopglyc(seq): #NOTE: detects overlapping glycosylation sites, IE: "NNST", as two sites.
     """
     :param seq: a protein sequence string
@@ -191,8 +206,10 @@ def main(infile, outpath, name, v1, v2, c2, v3, c3, v4, c4, v5):
     outfile_string1 = []
     for i in range(len(todo)):
         outfile_string1.append(str(todo[i].upper()) + "_loop_length,")
-        outfile_string1.append(str(todo[i].upper()) + "_loop_charge,")
-        outfile_string1.append(str(todo[i].upper()) + "_number_of_glycans,")
+        outfile_string1.append(str(todo[i].upper()) + "_loop_av_charge,")
+        outfile_string1.append(str(todo[i].upper()) + "_total_pos_charge,")
+        outfile_string1.append(str(todo[i].upper()) + "_total_neg_charge,")
+        outfile_string1.append(str(todo[i].upper()) + "_glycan_sites,")
     outfile_string1.append("sequence_id")
     outfile_string1.append("\n")
     outfilename_all = "".join(outfile_string1)
@@ -216,15 +233,16 @@ def main(infile, outpath, name, v1, v2, c2, v3, c3, v4, c4, v5):
             handle.write(time + ",")
         for item in sites_loc:
             loop_seq = loopseq(v, item[1], item[2])
-            loop_len = looplen(loop_seq)
-            loop_charge = loopcharge(loop_seq)
-            loop_glyc_no = loopglyc(loop_seq)
+            loop_len = str(looplen(loop_seq))
+            loop_charge = str(loopcharge(loop_seq))
+            loop_charge_all_pos, loop_charge_all_neg = loop_all_charge(loop_seq)
+            loop_glyc_no = str(loopglyc(loop_seq))
 
             # write stats to csv
             with open(outfile, "a") as handle:
-                handle.write(str(loop_len) + "," + str(loop_charge) + "," + str(loop_glyc_no) + ",")
+                handle.write(f"{loop_len},{loop_charge},{loop_charge_all_pos},{loop_charge_all_neg},{loop_glyc_no},")
         with open(outfile, "a") as handle:
-            handle.write(str(k) + "\n")
+            handle.write(f"{str(k)}\n")
 
     print("done")
 
@@ -232,7 +250,7 @@ def main(infile, outpath, name, v1, v2, c2, v3, c3, v4, c4, v5):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='calculate HIV-1 variable loop statistics',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-i', '--infile', type=str, required=True,
+    parser.add_argument('-in', '--infile', type=str, required=True,
                         help='The input fasta file (all time points in one file')
     parser.add_argument('-o', '--outpath', type=str, required=True,
                         help='The path to where the output file should go')

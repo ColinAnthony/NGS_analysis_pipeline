@@ -1,15 +1,8 @@
-#!/usr/bin/python
-from __future__ import print_function
-from __future__ import division
 import os
-import sys
 import argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-from matplotlib.ticker import AutoMinorLocator
-import matplotlib.cm as cm
 
 
 __author__ = 'Colin Anthony. Assistance from David Matten'
@@ -103,7 +96,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Plot amino acid frequencies for each position, from a .csv file'
                                                  'format output from calc_entropy_aa_glycan_freq.py.')
 
-    parser.add_argument('-i', '--infile', type=str,
+    parser.add_argument('-in', '--infile', type=str,
                         help='The input .csv file', required=True)
     parser.add_argument('-o', '--outpath', type=str,
                         help='The path to where the output files will be created', required=True)
@@ -120,4 +113,3 @@ if __name__ == "__main__":
     bnab_time = args.bnab_time
 
     main(infile, outpath, ab_time, bnab_time)
-

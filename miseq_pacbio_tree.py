@@ -384,7 +384,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='render a phylogenetic tree from a newark file and fasta '
                                                  'sequence (optional',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-i', '--infile', type=str,
+    parser.add_argument('-in', '--infile', type=str,
                         help='The input newick tree file', default=argparse.SUPPRESS, required=True)
     parser.add_argument('-f', '--fasta', type=str,
                         help='The fasta file used to make the tree', required=False, default=None)

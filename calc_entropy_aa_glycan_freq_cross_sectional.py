@@ -1,6 +1,3 @@
-#!/usr/bin/python2
-from __future__ import print_function
-from __future__ import division
 import argparse
 import os
 import numpy as np
@@ -280,7 +277,7 @@ def main(infile, outpath, dna, start, name):
         participant_list.append(participant)
         participant_d[participant].append(seq)
 
-    if dna is True:
+    if dna:
         func = d_freq_lists
     else:
         func = p_freq_lists
@@ -292,7 +289,7 @@ def main(infile, outpath, dna, start, name):
     pos_d = reorder_frqdict(master_profile, pos_num)
     ksort = sorted(pos_d.keys())
 
-    if dna is False:
+    if not dna:
         # calc glyc sites freq over participant
         glyc_finder(d, pos_num, glycan_outfile)
 
@@ -346,7 +343,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Calculate the Jensen-Shannon entropy for a '
                                                  'longitudinal sequence alignment',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-i', '--infile', default=argparse.SUPPRESS, type=str,
+    parser.add_argument('-in', '--infile', default=argparse.SUPPRESS, type=str,
                         help='The input fasta file, with all the participants in one file', required=True)
     parser.add_argument('-o', '--outpath', default=argparse.SUPPRESS, type=str,
                         help='The parent path containing the aa_freq, entropy and glycans subfolders. '

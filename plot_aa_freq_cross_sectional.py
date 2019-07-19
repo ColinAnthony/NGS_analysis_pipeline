@@ -1,44 +1,39 @@
-#!/usr/bin/python
-from __future__ import print_function
-from __future__ import division
 import os
-import sys
 import argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 import seaborn as sns
 
-__author__ = 'colin (and David Matten: david.matten@uct.ac.za)'
+
+__author__ = 'colin anthony and David Matten'
 
 
-def main(infile, outpath, ab_time, bnab_time):
 
-    data = pd.read_csv(infile, sep=',', header=0)
-    df = pd.DataFrame(data)
+def main(infile, outpath, treatment_grp):
+
+    df = pd.read_csv(infile, sep=',', header=0)
 
     if outpath == None:
         outpath = os.getcwd()
 
-    selection_bound = 1
+    selection_bound = 5
     x_header = "participant"
     group_col = "HXB2_position"
     y_lim_min = 0
     y_lim_max = 105
     # xmin = 0
 
-    for pos, df_grp in df.groupby(group_col):
-        print("pos: {}".format(pos))
-        # manipulate the dataframe
-        df_grp.drop(group_col, axis=1, inplace=True)
-        transp = df_grp.transpose()
-        transp = transp[(transp > selection_bound).any(axis=1)]
-        transp = transp[(transp < (100.0-selection_bound)).any(axis=1)]
-        df_new = transp.transpose()
 
-        if x_header not in df_new.columns:
-            df_new[x_header] = df_grp.loc[:, x_header]
+    for pos, df_grp in df.groupby(group_col):
+        print(f"pos: {pos}")
+        df_grp.drop(group_col, axis=1, inplace=True)
+        aminos = list(df_grp)[1:]
+        for resi in aminos:
+            if df_grp[resi].min() > (100 - selection_bound):
+                df_grp.drop(resi, axis=1, inplace=True)
+            elif df_grp[resi].max() < selection_bound:
+                df_grp.drop(resi, axis=1, inplace=True)
 
         my_colors = ["#C68A3B", "#7394CA", "#579F6A", "#C47BB2", "#D36C6E", "#53A7A6", "#8D909B", "#D6C463", "#A98B6D",
                      "grey"]
@@ -66,6 +61,7 @@ def main(infile, outpath, ab_time, bnab_time):
                    '-': '#707070',
                    'X': '#000000'}
 
+        df_new = df_grp
         # aa_dict = {
         #         'A': '#99ff99',
         #         'R': '#0000ff',
@@ -93,7 +89,13 @@ def main(infile, outpath, ab_time, bnab_time):
         # if the site is not conserved
         if len(df_new.columns) > 2:
 
+            headers = list(df_new)
+            melt_values = headers[1:]
+            df_plot = pd.melt(df_new, id_vars=['participant'], value_vars=melt_values)
+            df_plot.rename(columns={"variable": "residue"}, inplace=True)
+
             fig, ax = plt.subplots()
+
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
             ax.get_xaxis().tick_bottom()
@@ -102,39 +104,30 @@ def main(infile, outpath, ab_time, bnab_time):
             # set the axis limits and axis tick intervals
             plt.yticks(np.arange(y_lim_min, y_lim_max, 20), fontsize=10)
             plt.ylim(0, y_lim_max)
-            plt.xticks(rotation=90)
-
-            headers = list(df_new)
-            melt_values = headers[:-1]
-            plot_df = pd.melt(df_new, id_vars=['participant'], value_vars=melt_values)
-            plot_df.rename(columns={"variable": "residue"}, inplace=True)
+            # plt.xticks([])
 
             sns.set_style("white")
             sns.set_style("ticks")
             sns.axes_style("white")
-            # if pos == 454 or pos == 472 or pos == 480:
-            #print(plot_df)
-            sns.stripplot(x="participant", y="value", data=plot_df, size=20, hue="residue", palette=my_colors, alpha=0.80)
+
+            p = sns.stripplot(x="participant", y="value", data=df_plot, size=10, hue="residue",
+                              palette=my_colors, alpha=0.80)
+
             sns.despine(left=False, bottom=False)
 
-            # plot axis labels
-            plt.xlabel("Participant", fontsize=16, labelpad=10)
-            plt.ylabel("Frequency (%)", fontsize=16, labelpad=12)
-            plt.title("Position " + str(int(pos)), ha='center', fontsize=20)
+            ax.set_ylabel('Frequency (%)', fontsize=12)
+            ax.set_xlabel('', fontsize=12)
+
+            # p.set(xticklabels=[])
+
+            plt.title("Position " + str(int(pos)), x=0.0, y=1.01, fontsize=16)
 
             # add figure legend
-            plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0)
+            ax.legend_.remove()
 
-            # plot the antibody annotations
-            if ab_time is not None:
-                plt.text(ab_time, y_lim_max, ' ssNAb', horizontalalignment='left', verticalalignment='center',
-                         fontsize=10)
-                plt.axvline(x=ab_time, color='black', ls='dotted', lw=1, zorder=2)
-
-            if bnab_time is not None:
-                plt.text(bnab_time, y_lim_max, ' bNAb', horizontalalignment='left', verticalalignment='center',
-                         fontsize=10)
-                plt.axvline(x=bnab_time, color='black', ls='dotted', lw=1, zorder=1)
+            handles2, labels2 = ax.get_legend_handles_labels()
+            plt.legend(handles2, labels2, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+            plt.legend(frameon=False)
 
             # set figure size
             f = plt.gcf()
@@ -152,20 +145,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Plot amino acid frequencies for each position, from a .csv file'
                                                  'format output from calc_entropy_aa_glycan_freq.py.')
 
-    parser.add_argument('-i', '--infile', type=str,
+    parser.add_argument('-in', '--infile', type=str,
                         help='The input .csv file', required=True)
     parser.add_argument('-o', '--outpath', type=str,
                         help='The path to where the output files will be created', required=True)
-    parser.add_argument('-t', '--ab_time', default=None, type=int, required=False,
-                        help='The time to mask, ie: start of nAb "-t 19"')
-    parser.add_argument('-b', '--bnab_time', default=None, type=int, required=False,
-                        help='The second time point to mask, ie: start of bnnAb "-b 50"')
+    parser.add_argument('-s', '--treatment_grp', type=str,
+                        help='The csv file with the seq id and treatment assignment', required=True)
 
     args = parser.parse_args()
     infile = args.infile
     outpath = args.outpath
+    treatment_grp = args.treatment_grp
 
-    ab_time = args.ab_time
-    bnab_time = args.bnab_time
-
-    main(infile, outpath, ab_time, bnab_time)
+    main(infile, outpath, treatment_grp)

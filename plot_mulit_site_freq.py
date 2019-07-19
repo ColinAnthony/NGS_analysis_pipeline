@@ -1,5 +1,3 @@
-from __future__ import print_function
-from __future__ import division
 import argparse
 import os
 import pandas as pd
@@ -7,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 
 
-__author__ = 'colin'
+__author__ = 'colin anthony'
 
 
 def transform_df_by_vl(headers, df, vl_file, participant):
@@ -44,7 +42,7 @@ def transform_df_by_vl(headers, df, vl_file, participant):
         return test_df
 
 
-def divergence_plotter(headers, df, name, outfile, ab_time, bnab_time, vl_file):
+def divergence_plotter(headers, df, name, outfile, vl_file):
     """
     :param headers: x axis header
     :param item: y axis header
@@ -55,25 +53,39 @@ def divergence_plotter(headers, df, name, outfile, ab_time, bnab_time, vl_file):
     """
 
     ymax = 101
-    xmax = 30
+    xmax = 60
     ymin = 0
-    xmin = 0
-    selection_bound = 10
+    xmin = 4
+    selection_bound = 20
     x_step = int(xmax/10.0)
     # fiter the dataframe to only those haplotypes which are greater than the % selection bound and up to time xmax
+    times = sorted(list(set(df["Time"].to_list())))
 
-    # set haplotypes as column headers
-    piv_df = df.pivot(index=headers[0], columns=headers[1])
+    wt = df["Frequency"][df.Haplotype == "WT"].to_list()
+    k343 = df["Frequency"][df.Haplotype == "343K"].to_list()
+    k350 = df["Frequency"][df.Haplotype == "350K"].to_list()
+    del358 = df["Frequency"][df.Haplotype == "358del"].to_list()
+    n339 = df["Frequency"][df.Haplotype == "339N"].to_list()
+    n339_k343 = df["Frequency"][df.Haplotype == "339N+343K"].to_list()
+    n339_k350 = df["Frequency"][df.Haplotype == "339N+350K"].to_list()
+    n339_358del = df["Frequency"][df.Haplotype == "339N+358del"].to_list()
 
-    # reset time as column not index
-    piv_df.reset_index(level=0, inplace=True)
 
-    # filter by desited xaxis time point
-    filt_df = piv_df[(piv_df.Time <= xmax)]
 
-    # filter by those column with xmax > selection and xmin < 100 - selection
-    new_df = filt_df.loc[:, (filt_df.max() >= selection_bound) & (filt_df.min() <= 100 - selection_bound)]
-    new_df.fillna(value=0)
+    # # df = df.sort_values('Haplotype')
+    #
+    # # set haplotypes as column headers
+    # piv_df = df.pivot(index=headers[0], columns=headers[1])
+    #
+    # # reset time as column not index
+    # piv_df.reset_index(level=0, inplace=True)
+    #
+    # # filter by desited xaxis time point
+    # filt_df = piv_df[(piv_df.Time <= xmax)]
+    #
+    # # filter by those column with xmax > selection and xmin < 100 - selection
+    # new_df = filt_df.loc[:, (filt_df.max() >= selection_bound) & (filt_df.min() <= 100 - selection_bound)]
+    # new_df.fillna(value=0)
 
     # set axes
     fig, ax = plt.subplots(1, 1)
@@ -86,29 +98,42 @@ def divergence_plotter(headers, df, name, outfile, ab_time, bnab_time, vl_file):
     ax.get_yaxis().tick_left()
     ax.set_facecolor('white')
 
-    new_df.set_index("Time", inplace=True)
+    # new_df.set_index("Time", inplace=True)
+    # new_df.columns = new_df.columns.get_level_values(1)
+    # new_df.plot(kind='line', style='.-', zorder=1)
 
-    new_df.columns = new_df.columns.get_level_values(1)
-    new_df.plot(kind='line', style='.-')
+    del358 = [0.0, 0.0921, 0.0, 0.0, 0.0, 0.4367, 0.0, 0.4831, 0.3996, 2.6568, 7.8104, 27.0351,
+              3.2714, 43.4015, 85.5491, 62.7479, 60.7928, 43.5316, 36.9286, 76.7081, 60.9756,
+              80.2752, 84.9712, 99.9706]
 
-    plt.legend(frameon=False, framealpha=False,bbox_to_anchor=(1.01, 0.901))
+    # k351 = [0.0, 0.2762, 0.1153, 0.0, 0.1757, 0.0, 0.3945, 1.4493, 0.0959, 0.2214, 0.9215,
+    #         0.1485, 0.1487, 0.0929, 0.612, 1.5809, 20.1595, 21.577, 6.7143, 39.1304, 24.9322,
+    #         7.0118, 13.004, 15.8003]
 
+    plt.plot(times, wt, marker="o", markersize=4, label="WT")
+    plt.plot(times, k343, marker="o", markersize=4, label="343K")
+    plt.plot(times, k350, marker="o", markersize=4, label="350K")
+    plt.plot(times, n339, marker="o", markersize=4, label="339N")
+    plt.plot(times, n339_k343, marker="o", markersize=4, label="339N+343K")
+    plt.plot(times, n339_k350, marker="o", markersize=4, label="339N+350K")
+    # plt.plot(times, del358, marker="o", markersize=4, label="358del")
+    plt.plot(times, n339_358del, marker="o", markersize=4, label="339N+358del")
+
+    plt.legend(title="", frameon=False, framealpha=False,bbox_to_anchor=(1.01, 0.901))
     plt.ylim(ymin, ymax + 1)
-    plt.xlim(xmin, xmax)
-    plt.yticks(list(range(ymin, ymax, 20)), fontsize=14)
-    plt.xticks(list(range(xmin, xmax, x_step)), fontsize=14)
+    plt.xlim(0, 60)
 
+    plt.yticks(list(range(ymin, ymax, 20)), fontsize=14)
+    plt.xticks(list(range(0, 65, 5)), fontsize=14)
     plt.ylabel("Frequency (%)", fontsize=24, labelpad=14)
     plt.xlabel("Weeks post infection", fontsize=24, labelpad=12)
 
     # add annotations for nAb time points
-    if ab_time is not None:
-        plt.text(ab_time, ymax, ' ssNAb', horizontalalignment='left', verticalalignment='center', fontsize=10)
-        ax.axvline(x=ab_time, color='black', ls='dotted', lw=1, zorder=1)
-
-    if bnab_time is not None:
-        plt.text(bnab_time, ymax, ' bNAb', horizontalalignment='left', verticalalignment='center', fontsize=10)
-        plt.axvline(x=bnab_time, color='black', ls='dotted', lw=1, zorder=1)
+    # ab_time = [11, 15, 25]
+    # ab = ["IgG1", "IgG3", "IgA1",]
+    # for i, nab_t in enumerate(ab_time):
+    #     plt.text(nab_t, ymax - 5, ab[i], horizontalalignment='left', verticalalignment='center', fontsize=10)
+    #     plt.axvline(x=nab_t, color='black', ls='dotted', lw=1, zorder=0)
 
     w = 6.875
     h = 4
@@ -118,12 +143,10 @@ def divergence_plotter(headers, df, name, outfile, ab_time, bnab_time, vl_file):
     plt.savefig(outfile, ext='png', dpi=600, format='png', facecolor='white', bbox_inches='tight')
 
 
-def main(infile, vl_file, name, ab_time, bnab_time, outpath):
+def main(infile, vl_file, name, outpath):
     """
 
     :param vl_file: csv file with format like that produced by loop_stats.py or calc_divergence.py
-    :param ab_time: (int) time point that nAbs emerge
-    :param bnab_time: (int) time point that bnAbs emerge
     :param outpath: (str) path to output folder
     :return: writes graphs to file depending on what columns are present in csv file
     """
@@ -141,7 +164,7 @@ def main(infile, vl_file, name, ab_time, bnab_time, outpath):
 
     ndf = transform_df_by_vl(headers, df, vl_file, participant)
     headers = list(ndf)
-    outfile = os.path.join(outpath, name + "_multi_site_site.png")
+    outfile = os.path.join(outpath, name + "_multi_site_escape.png")
 
     # sum_av_dist = df.groupby([headers[0]]).agg({headers[1]: ['mean', 'std']})
     # av_vals = pd.DataFrame(sum_av_dist.to_records())
@@ -150,23 +173,19 @@ def main(infile, vl_file, name, ab_time, bnab_time, outpath):
     # av_vals.to_csv(outfile1 + "_" + str(headers[1]) + "_av_loop_stats.csv", sep=",", index=False)
     # av_headers = list(av_vals)
 
-    divergence_plotter(headers, ndf, name, outfile, ab_time, bnab_time, vl_file)
+    divergence_plotter(headers, ndf, name, outfile, vl_file)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Plots loop stats from csv file (produced by loop_stats.py)',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-i1', '--infile1', type=str, required=True,
+    parser.add_argument('-in1', '--infile1', type=str, required=True,
                         help='The input csv file')
-    parser.add_argument('-i2', '--infile2', type=str, default=None, required=False,
+    parser.add_argument('-in2', '--infile2', type=str, default=None, required=False,
                         help='The csv file with columns for participant, time point, viral load. Without this flag, '
                              'scatter point sizes will be scaled by frequency only, not adjusted by viral load')
     parser.add_argument('-n', '--name', type=str, required=True,
                         help='The name of the patient: ie: "CAP177"')
-    parser.add_argument('-t', '--ab_time', type=int, required=False,
-                        help='The time to mask, ie: start of nAb "-t 19"')
-    parser.add_argument('-b', '--bnab_time', type=int, required=False,
-                        help='The second time point to mask, ie: start of bnnAb "-b 50"')
     parser.add_argument('-o', '--outpath', type=str, required=True,
                         help='The path to where the outfile will be written ')
 
@@ -174,8 +193,6 @@ if __name__ == "__main__":
     infile1 = args.infile1
     infile2 = args.infile2
     name = args.name
-    ab_time = args.ab_time
-    bnab_time = args.bnab_time
     outpath = args.outpath
 
-    main(infile1, infile2, name, ab_time, bnab_time, outpath)
+    main(infile1, infile2, name, outpath)

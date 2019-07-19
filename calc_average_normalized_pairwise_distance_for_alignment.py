@@ -1,15 +1,5 @@
-#!/usr/bin/python
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
-import operator
 import os
-import sys
-import collections
 import argparse
-import regex
-from Bio import SeqIO
-from glob import glob
 from smallBixTools import smallBixTools as st
 
 
@@ -26,10 +16,7 @@ def main(in_fasta, outpath):
         for k1, v1 in dct.items():
             for k2, v2 in dct.items():
                 if k1 != k2:
-                    # alignments = pairwise2.align.globalxx(v1, v2)
-                    # s1 = alignments[0][0]
-                    # s2 = alignments[0][1]
-                    dist = st.customdist(v1, v2)
+                    dist = st.customdist(v1.upper(), v2.upper())
                     norm_dist = dist / len(v1)
                     normadjustdist_perc = round(norm_dist * 100, 2)
 

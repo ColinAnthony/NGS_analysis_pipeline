@@ -1,5 +1,3 @@
-from __future__ import print_function
-from __future__ import division
 import os
 import argparse
 import collections
@@ -102,7 +100,7 @@ def main(infile, outpath, field):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='collapses sequences by unique, with freq added to the name',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-i', '--infile', type=str, required=True,
+    parser.add_argument('-in', '--infile', type=str, required=True,
                         help='The input fasta file')
     parser.add_argument('-o', '--outpath', required=True, type=str,
                         help='path for output.')

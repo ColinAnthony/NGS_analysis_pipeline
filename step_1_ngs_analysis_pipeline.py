@@ -1,6 +1,3 @@
-#!/usr/bin/python3
-from __future__ import print_function
-from __future__ import division
 import os
 import sys
 import argparse
@@ -23,7 +20,7 @@ def aa_plotter(script_file, infile, outpath, ssnab, bnab):
     else:
         ab_markers = ''
 
-    cmd1 = "python3 {0} -i {1} -o {2} {3}".format(script_file, infile, outpath, ab_markers)
+    cmd1 = "python3 {0} -in {1} -o {2} {3}".format(script_file, infile, outpath, ab_markers)
 
     subprocess.call(cmd1, shell=True)
 
@@ -40,7 +37,7 @@ def glycan_plotter(script_file, infile, outpath, ssnab, bnab):
     else:
         ab_markers = ''
 
-    cmd1 = "python3 {0} -i {1} -o {2} {3}".format(script_file, infile, outpath, ab_markers)
+    cmd1 = "python3 {0} -in {1} -o {2} {3}".format(script_file, infile, outpath, ab_markers)
 
     subprocess.call(cmd1, shell=True)
 
@@ -60,7 +57,7 @@ def entropy_plotter(script_file, infiles, outpath, ssnab, bnab):
     for infile in infiles:
         name = os.path.split(infile)[-1].replace(".csv", "")
 
-        cmd1 = "python3 {0} -i {1} -o {2} -n {3} {4}".format(script_file, infile, outpath, name, ab_markers)
+        cmd1 = "python3 {0} -in {1} -o {2} -n {3} {4}".format(script_file, infile, outpath, name, ab_markers)
 
         subprocess.call(cmd1, shell=True)
 
@@ -122,7 +119,6 @@ def main(alignment, viral_load_file, parent_folder, start, freq, ab_time, bnab_t
     script_folder = os.path.split(get_script_path)[0]
     script_folder = os.path.abspath(script_folder)
 
-    loops = [x.lower() for x in loops]
     alignment = os.path.abspath(alignment)
     if viral_load_file is not None:
         viral_load_file = os.path.abspath(viral_load_file)
@@ -130,7 +126,7 @@ def main(alignment, viral_load_file, parent_folder, start, freq, ab_time, bnab_t
     script_folder = os.path.abspath(script_folder)
     reference = os.path.abspath(reference)
 
-    name = "_".join(os.path.split(alignment)[-1].split("_")[:2])
+    name = "_".join(os.path.split(alignment)[-1].split("_")[:3])
 
     analysis_folder = os.path.join(parent_folder, "6analysis")
     haplotypes = os.path.join(parent_folder, "5haplotypes")
@@ -150,14 +146,14 @@ def main(alignment, viral_load_file, parent_folder, start, freq, ab_time, bnab_t
         run_step += 1
         # calc detection level
         detection_limit_script = os.path.join(script_folder, "calc_variant_detection_limit.py")
-        cmd4 = "python3 {0} -i {1} -o {2} -f {3}".format(detection_limit_script, haplotypes, parent_folder, freq)
+        cmd4 = "python3 {0} -in {1} -o {2} -f {3}".format(detection_limit_script, haplotypes, parent_folder, freq)
 
         subprocess.call(cmd4, shell=True)
 
         # calc aa freq, glycs, entropy
         print("calculating aa freq, glycan freq and entropy")
         entropy_aa_calc_script = os.path.join(script_folder, "calc_entropy_aa_glycan_freq.py")
-        cmd1 = "python3 {0} -i {1} -o {2} -n {3} -s {4}".format(entropy_aa_calc_script, alignment, analysis_folder,
+        cmd1 = "python3 {0} -in {1} -o {2} -n {3} -s {4}".format(entropy_aa_calc_script, alignment, analysis_folder,
                                                                 name, start)
         subprocess.call(cmd1, shell=True)
 
@@ -166,19 +162,20 @@ def main(alignment, viral_load_file, parent_folder, start, freq, ab_time, bnab_t
             print("calculating divergence")
             divergence_script = os.path.join(script_folder, "calc_divergence.py")
             divergence_folder = os.path.join(analysis_folder, "divergence")
-            cmd2 = "python3 {0} -r {1} -i {2} -o {3} -n {4}".format(divergence_script, reference,
+            cmd2 = "python3 {0} -r {1} -in {2} -o {3} -n {4}".format(divergence_script, reference,
                                                                     alignment, divergence_folder, name)
 
             subprocess.call(cmd2, shell=True)
 
         # calc loop stats
         if env:
+            loops = [x.lower() for x in loops]
             print("calculating v-loop statistics")
             loop_stats_script = os.path.join(script_folder, "calc_v_loop_stats.py")
             loops_folder = os.path.join(analysis_folder, "loops")
             loop_arg = " ".join(["-" + str(x) for x in loops])
 
-            cmd3 = "python3 {0} -i {1} -o {2} -n {3} {4}".format(loop_stats_script, alignment, loops_folder, name,
+            cmd3 = "python3 {0} -in {1} -o {2} -n {3} {4}".format(loop_stats_script, alignment, loops_folder, name,
                                                                  loop_arg)
 
             subprocess.call(cmd3, shell=True)

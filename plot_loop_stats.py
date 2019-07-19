@@ -1,6 +1,3 @@
-#!/usr/bin/python
-from __future__ import print_function
-from __future__ import division
 import os
 import argparse
 import pandas as pd
@@ -8,7 +5,8 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.ticker import AutoMinorLocator
 
-__author__ = 'colin.anthony001@gmail.com'
+
+__author__ = 'colin anthony'
 
 
 def transform_df_by_vl(headers, item, df, vl_file, participant):

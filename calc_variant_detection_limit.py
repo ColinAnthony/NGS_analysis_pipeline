@@ -1,9 +1,5 @@
-#!/usr/bin/python
-from __future__ import print_function
-from __future__ import division
 import argparse
 import collections
-# import scipy.stats as ss
 from glob import glob
 from itertools import groupby
 import os
@@ -87,7 +83,7 @@ if __name__ == "__main__":
                                                  'with 95 % probability',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('-i', '--inpath', type=str, required=True,
+    parser.add_argument('-in', '--inpath', type=str, required=True,
                         help='The path to your patient/time point files (should be "/path/to/5haplotype" '
                              'if you ran the NGS_processing_pipeline')
     parser.add_argument('-o', '--outpath', type=str, required=True,

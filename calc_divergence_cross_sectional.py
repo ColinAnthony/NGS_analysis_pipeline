@@ -1,27 +1,11 @@
-#!/usr/bin/python
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
-import os
 import sys
-import collections
 import argparse
 from Bio import SeqIO
-from glob import glob
+from smallBixTools import smallBixTools as sb
+import pathlib
 
 
-__author__ = 'colin'
-
-
-def fasta_to_dct(fn):
-    '''
-    :param fn: a fasta file
-    :return: a dictionary
-    '''
-    dct = collections.OrderedDict()
-    for seq_record in SeqIO.parse(open(fn), "fasta"):
-        dct[seq_record.description.replace(" ", "_")] = str(seq_record.seq).replace("~", "-").upper()
-    return dct
+__author__ = 'colin anthony'
 
 
 def gethxb2(dict):
@@ -46,65 +30,22 @@ def gethxb2(dict):
     return str(hxb2_key), str(hxb2_seq)
 
 
-def customdist(s1, s2):
-
-    if len(s1) != len(s2):
-        print("sequences must be the same length")
-        sys.exit()
-
-    dist = 0
-    for c1, c2 in zip(s1, s2):
-        if c1 != c2:
-            dist += 1
-    diff = 0
-    for i in range(len(s1)-1):
-        if s1[i] != s2[i]:
-            if (s1[i] == "-" and s1[i+1] == "-" and s2[i+1] != "-") \
-                    or (s2[i] == "-" and s2[i+1] == "-" and s1[i+1] != "-"):
-                diff += 1
-
-    return (dist-diff)
-
-
-def normcustomdist(s1, s2):
-
-    if len(s1) != len(s2):
-        print("sequences must be the same length")
-        sys.exit()
-
-    dist = 0
-    for c1, c2 in zip(s1, s2):
-        if c1 != c2:
-            dist += 1
-    diff = 0
-    for i in range(len(s1)-1):
-        if s1[i] != s2[i]:
-            if (s1[i] == "-" and s1[i+1] == "-" and s2[i+1] != "-") \
-                    or (s2[i] == "-" and s2[i+1] == "-" and s1[i+1] != "-"):
-                diff += 1
-
-    dist = dist-diff
-    normdist = dist / len(s1)
-
-    return normdist
-
-
 def main(in_path, outpath, name):
 
     # set the outfile name
     name = name + "_divergence.csv"
-    outfile = os.path.join(outpath, name)
+    outfile = pathlib.Path(outpath, name).absolute()
 
     # write the headings to the outfile
     with open(outfile, "w") as handle:
         handle.write("participant,Normalised_hamming_distance_adjusted_(changes_per_100_bases),sequence_id\n")
 
     # get files
-    in_files = os.path.join(in_path, "*sep.fasta")
-    for file in glob(in_files):
+    in_files = pathlib.Path(in_path).glob("*sep.fasta")
+    for file in list(in_files):
         print(file)
-        seqs_d = fasta_to_dct(file)
-        ref_file = file.replace("sep.fasta", "hap.fasta")
+        seqs_d = sb.fasta_to_dct(file)
+        ref_file = str(file).replace("sep.fasta", "hap.fasta")
 
         # get ref
         ref_record = next(SeqIO.parse(ref_file, "fasta"))
@@ -119,12 +60,10 @@ def main(in_path, outpath, name):
                 sys.exit()
             else:
                 participant_id = seq_name.split("_")[0]
-
-                # hamdist = distance.hamming(seq, refseq, normalized=True)
-                normadjustdist_perc = round(normcustomdist(seq, ref_seq) * 100, 2)
+                normadjustdist_perc = round((sb.customdist(seq.upper(), ref_seq.upper()) / len(seq)) * 100, 2)
 
                 with open(outfile, "a") as handle:
-                    handle.write(",".join([str(x) for x in [participant_id, normadjustdist_perc,  seq_name]]) + "\n")
+                    handle.write(f"{participant_id},{normadjustdist_perc},{seq_name}\n")
 
     print("Divergence calculations are complete")
 

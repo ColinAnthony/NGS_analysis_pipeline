@@ -1,21 +1,12 @@
-#!/usr/bin/python
-from __future__ import print_function
-from __future__ import division
 import argparse
 import os
-import sys
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.ticker import AutoMinorLocator
-import matplotlib.cm as cm
-import numpy as np
-import matplotlib.patches as mpatches
-import matplotlib.lines as mlines
-from pprint import pprint
 
 
-__author__ = 'colin'
+__author__ = 'colin anthony'
 
 
 def transform_df_by_vl(headers, df, vl_file, participant):

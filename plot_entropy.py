@@ -1,6 +1,3 @@
-#!/usr/bin/python
-from __future__ import print_function
-from __future__ import division
 import argparse
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -9,7 +6,9 @@ import numpy as np
 from matplotlib import ticker
 import os
 from scipy import arange
-__author__ = 'colin'
+
+
+__author__ = 'colin anthony'
 
 
 def manipulate_df(df):
@@ -141,7 +140,7 @@ def main(infile, outpath, name, colour, ab_time, bnab_time, show):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Plots the JSD/entropy as a heatmap',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-i', '--infile', default=argparse.SUPPRESS, type=str,
+    parser.add_argument('-in', '--infile', default=argparse.SUPPRESS, type=str,
                         help='The input entropy .csv file from jensen_shannon_entropy', required=True)
     parser.add_argument('-o', '--outpath', type=str,
                         help='The path to where the output files will be created', required=True)

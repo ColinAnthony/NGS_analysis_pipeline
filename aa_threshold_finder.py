@@ -2,14 +2,8 @@
 from __future__ import print_function
 from __future__ import division
 import os
-import sys
 import argparse
-import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-from matplotlib.ticker import AutoMinorLocator
-import matplotlib.cm as cm
 
 
 __author__ = 'David Matten. Assistance from Colin Anthony'
@@ -28,6 +22,10 @@ def get_previous_freq(position_df, aa, wpi, wpis, time_heading):
 
 def main(infile, outpath):  # , ab_time, bnab_time
     print("Finding time points where amino acid frequencies cross thresholds.")
+    infile = os.path.abspath(infile)
+    outpath = os.path.abspath(outpath)
+    out_name = os.path.split(infile)[-1].replace(".csv", "threshold_kinetics.csv")
+    outfile = os.path.join(outpath, out_name)
     df = pd.read_csv(infile, sep=',', header=0)
     print(df)
 
@@ -47,9 +45,7 @@ def main(infile, outpath):  # , ab_time, bnab_time
 
     threshold = 10
 
-    out_csv_fn = os.path.join(outpath, "out.csv")
-
-    with open(out_csv_fn, "w") as fw:
+    with open(outfile, "w") as fw:
         fw.write("position,WPI,AA_crossing_threshold_going_UP,AA_freq,this_aa_previously_was,original\n")
         for position in positions:
             position_df = df[df[position_heading] == position]
@@ -72,6 +68,7 @@ def main(infile, outpath):  # , ab_time, bnab_time
                         fw.write("{}, {}, {}, {}, {}, {}\n".format(position, wpi, aa, this_aa_freq,
                                                                    this_aa_previous_freq, original_max_aa))
 
+    print("threshold calculations completed")
 
 
 if __name__ == "__main__":
@@ -79,7 +76,7 @@ if __name__ == "__main__":
                                                  'calc_entropy_aa_glycan_freq.py, here we find where amino acid '
                                                  'frequencies cross a threshold from one time point to the next.')
 
-    parser.add_argument('-i', '--infile', type=str,
+    parser.add_argument('-in', '--infile', type=str,
                         help='The input .csv file', required=True)
     parser.add_argument('-o', '--outpath', type=str,
                         help='The path to where the output files will be created', required=True)
