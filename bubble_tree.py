@@ -256,10 +256,10 @@ def bub_tree(tree, fasta, outfile, root, types, c_dict, show, size,
     
     if root is not None:
         tree.set_outgroup(root)
-    # else:
-    #     r = tnode.get_midpoint_outgroup()
-    #     print("r", r)
-    #     tree.set_outgroup(r)
+    else:
+        r = tree.get_midpoint_outgroup()
+        print("r", r)
+        tree.set_outgroup(r)
     time_col = []
     tree.ladderize()
     for node in tree.traverse():
