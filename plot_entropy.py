@@ -50,17 +50,17 @@ def cMaper(num):
 
 def heatmap(ndf, outfile, c, ab_time, bnab_time, cbar_title, show):
 
-    nh = list(ndf)
+    x_labels = list(ndf)
     m = ndf.max(axis=None, skipna=None, level=None, numeric_only=None)
     highest = max(m)
     highest = round(highest, 1)
     step = highest/5
-    ylabels = list(arange(0, highest, step))
-    las = ylabels[-1] + step
-    ylabels.append(las)
+    cbar_labels = list(arange(0, highest, step))
+    last_cbar_label = cbar_labels[-1] + step
+    cbar_labels.append(last_cbar_label)
     fig, ax = plt.subplots()
 
-    heatmap = ax.pcolor(ndf, cmap=c, alpha=1) #alpha=0.9
+    heatmap = ax.pcolor(ndf, cmap=c, alpha=1, orientation=u'horizontal') #alpha=0.9
 
     fig = plt.gcf()
     fig.set_size_inches(8, 15)
@@ -70,15 +70,11 @@ def heatmap(ndf, outfile, c, ab_time, bnab_time, cbar_title, show):
     ax.invert_yaxis()
     ax.xaxis.tick_bottom()
 
-    labels = nh
-    ax.set_xticklabels(labels, minor=False, fontsize=6)
+    ax.set_xticklabels(x_labels, minor=False, fontsize=6)
 
     plt.tick_params(axis='both', which='major', labelsize=6)
-    ax.set_xticklabels(labels, fontsize='small')
+    ax.set_xticklabels(x_labels, fontsize='small')
     plt.setp(ax.get_xticklabels(), rotation='horizontal', fontsize=6)
-
-    ax.set_yticklabels(ndf.index, minor=False, fontsize=6)
-
     plt.xticks(rotation=90)
     ax.grid(False)
 
@@ -91,18 +87,18 @@ def heatmap(ndf, outfile, c, ab_time, bnab_time, cbar_title, show):
         t.tick2On = False
 
     if ab_time is not None:
-        sn = nh.index(ab_time)
+        sn = x_labels.index(ab_time)
         plt.text(sn, -1.20, 'ssNAb', horizontalalignment='left', verticalalignment='center', fontsize=6)
         ax.axvline(x=sn, color='#ffffff', ls='dotted', lw=2, zorder=1)
 
     if bnab_time is not None:
-        bn = nh.index(bnab_time)
+        bn = x_labels.index(bnab_time)
         plt.text(bn, -1.20, 'bNAb', horizontalalignment='left', verticalalignment='center', fontsize=6)
         plt.axvline(x=bn, color='#ffffff', ls='dotted', lw=2, zorder=1)
 
     cbar = plt.colorbar(heatmap, aspect=50)
     cbar.ax.tick_params(labelsize=6)
-    cbar.ax.set_yticklabels(ylabels)
+    cbar.ax.set_yticklabels(cbar_labels)
     cbar.set_label(cbar_title, rotation=270, labelpad=40, fontsize=16)
     tick_locator = ticker.MaxNLocator(nbins=6)
     cbar.locator = tick_locator

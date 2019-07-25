@@ -247,10 +247,10 @@ def bub_tree(tree, fasta, outfile, root, types, c_dict, show, size,
 
     tstyle.draw_guiding_lines = False
     tstyle.guiding_lines_color = 'slateblue'
-    tstyle.show_leaf_name = False
+    tstyle.show_leaf_name = True
     tstyle.allow_face_overlap = True
     tstyle.show_branch_length = False
-    tstyle.show_branch_support = False
+    tstyle.show_branch_support = True
     TreeNode(format=0, support=True)
     # tnode = TreeNode()
     
@@ -258,7 +258,7 @@ def bub_tree(tree, fasta, outfile, root, types, c_dict, show, size,
         tree.set_outgroup(root)
     else:
         r = tree.get_midpoint_outgroup()
-        print("r", r)
+        # print("r", r)
         tree.set_outgroup(r)
     time_col = []
     tree.ladderize()
