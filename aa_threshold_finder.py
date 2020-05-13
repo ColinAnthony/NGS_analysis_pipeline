@@ -1,6 +1,3 @@
-#!/usr/bin/python
-from __future__ import print_function
-from __future__ import division
 import os
 import argparse
 import pandas as pd
@@ -20,14 +17,13 @@ def get_previous_freq(position_df, aa, wpi, wpis, time_heading):
     return previous_aa_freq
 
 
-def main(infile, outpath):  # , ab_time, bnab_time
+def main(infile, outpath, threshold):
     print("Finding time points where amino acid frequencies cross thresholds.")
     infile = os.path.abspath(infile)
     outpath = os.path.abspath(outpath)
     out_name = os.path.split(infile)[-1].replace(".csv", "threshold_kinetics.csv")
     outfile = os.path.join(outpath, out_name)
     df = pd.read_csv(infile, sep=',', header=0)
-    print(df)
 
     time_heading = 'Time'
     position_heading = 'HXB2_position'
@@ -42,8 +38,6 @@ def main(infile, outpath):  # , ab_time, bnab_time
 
     wpis = list(set(list(df['Time'])))
     wpis.sort()
-
-    threshold = 10
 
     with open(outfile, "w") as fw:
         fw.write("position,WPI,AA_crossing_threshold_going_UP,AA_freq,this_aa_previously_was,original\n")
@@ -80,9 +74,12 @@ if __name__ == "__main__":
                         help='The input .csv file', required=True)
     parser.add_argument('-o', '--outpath', type=str,
                         help='The path to where the output files will be created', required=True)
+    parser.add_argument('-t', '--threshold', type=int,
+                        help='The percent change required to include', default=10, required=True)
 
     args = parser.parse_args()
     infile = args.infile
     outpath = args.outpath
+    threshold = args.threshold
 
-    main(infile, outpath)
+    main(infile, outpath, threshold)

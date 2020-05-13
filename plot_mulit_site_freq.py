@@ -62,15 +62,15 @@ def divergence_plotter(headers, df, name, outfile, vl_file):
     times = sorted(list(set(df["Time"].to_list())))
 
     wt = df["Frequency"][df.Haplotype == "WT"].to_list()
-    k343 = df["Frequency"][df.Haplotype == "343K"].to_list()
-    k350 = df["Frequency"][df.Haplotype == "350K"].to_list()
-    del358 = df["Frequency"][df.Haplotype == "358del"].to_list()
-    n339 = df["Frequency"][df.Haplotype == "339N"].to_list()
-    n339_k343 = df["Frequency"][df.Haplotype == "339N+343K"].to_list()
-    n339_k350 = df["Frequency"][df.Haplotype == "339N+350K"].to_list()
-    n339_358del = df["Frequency"][df.Haplotype == "339N+358del"].to_list()
-
-
+    n339 = df["Frequency"][df.Haplotype == "I339N"].to_list()
+    k343 = df["Frequency"][df.Haplotype == "E343K"].to_list()
+    k350 = df["Frequency"][df.Haplotype == "E350K"].to_list()
+    # del358 = df["Frequency"][df.Haplotype == "K358del"].to_list()
+    n339_k343 = df["Frequency"][df.Haplotype == "I339N+E343K"].to_list()
+    n339_k350 = df["Frequency"][df.Haplotype == "I339N+E350K"].to_list()
+    n339_358del = df["Frequency"][df.Haplotype == "I339N+K358del"].to_list()
+    n339_343k_358del = df["Frequency"][df.Haplotype == "I339N+E343K+K358del"].to_list()
+    n339_350k_358del = df["Frequency"][df.Haplotype == "I339N+E350K+K358del"].to_list()
 
     # # df = df.sort_values('Haplotype')
     #
@@ -111,13 +111,15 @@ def divergence_plotter(headers, df, name, outfile, vl_file):
     #         7.0118, 13.004, 15.8003]
 
     plt.plot(times, wt, marker="o", markersize=4, label="WT")
-    plt.plot(times, k343, marker="o", markersize=4, label="343K")
-    plt.plot(times, k350, marker="o", markersize=4, label="350K")
-    plt.plot(times, n339, marker="o", markersize=4, label="339N")
-    plt.plot(times, n339_k343, marker="o", markersize=4, label="339N+343K")
-    plt.plot(times, n339_k350, marker="o", markersize=4, label="339N+350K")
-    # plt.plot(times, del358, marker="o", markersize=4, label="358del")
-    plt.plot(times, n339_358del, marker="o", markersize=4, label="339N+358del")
+    plt.plot(times, k343, marker="o", markersize=4, label="E343K")
+    plt.plot(times, k350, marker="o", markersize=4, label="E350K")
+    plt.plot(times, n339, marker="o", markersize=4, label="I339N")
+    plt.plot(times, n339_k343, marker="o", markersize=4, label="I339N+E343K")
+    plt.plot(times, n339_k350, marker="o", markersize=4, label="I339N+E350K")
+    # plt.plot(colours, del358, marker="o", markersize=4, label="358del")
+    plt.plot(times, n339_358del, marker="o", markersize=4, label="I339N+K358del")
+    plt.plot(times, n339_343k_358del, marker="o", markersize=4, label="I339N+E343K+K358del")
+    plt.plot(times, n339_350k_358del, marker="o", markersize=4, label="I339N+E350K+K358del")
 
     plt.legend(title="", frameon=False, framealpha=False,bbox_to_anchor=(1.01, 0.901))
     plt.ylim(ymin, ymax + 1)

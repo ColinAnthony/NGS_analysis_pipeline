@@ -1,8 +1,7 @@
-from __future__ import print_function
-from __future__ import division
 import argparse
 import sys, os
 import collections
+import math
 from itertools import groupby
 try:
     from ete3 import Tree, faces, TreeStyle, NodeStyle, TreeNode, add_face_to_node,  SequenceFace, SeqMotifFace
@@ -76,68 +75,61 @@ def highlighter_dct(d, consens, colours):
     return d
 
 
-def get_time(tree, field2):
+def get_colour_maps(tree, field2):
     """
     :param tree: tree object parsed from ete module
     :param field2: the '_' delimited field containing the sample/time point identifier
     :return: non_redundant list of time points, number of time points
     """
-    times = []
+    colours = []
     for node in tree.traverse():
         if node.is_leaf() == True:
             name = node.name.split("_")
             try:
                 t = name[field2]
             except:
-                t = 'zero'
-                print("incorrect name format: sequence assigned time point of 'zero", node.name)
+                t = 'black'
+                print("incorrect name format: sequence colour code will be black", node.name)
 
-            if t not in times:
-                times.append(t)
+            if t not in colours:
+                colours.append(t)
 
-    times.sort()
+    colours.sort()
 
-    return times
+    return colours
 
 
-def col_map(times):
+def col_map(colours):
     """
-    :param times: non_redundant list of time points from get_times function
+    :param colours: non_redundant list of time points from get_times function
     :param n_color: number of time points
     :return: dictionary mapping colour spectrum to time points, key = time point, value = colour code
     """
 
-    colour_25 = ['#E50001', '#E32A00', '#E15700', '#E08300', '#DEAE00', '#DDD800', '#B4DB00', '#88D900',
+    full_colour_list = ['#E50001', '#E32A00', '#E15700', '#E08300', '#DEAE00', '#DDD800', '#B4DB00', '#88D900',
               '#5CD800', '#31D600', '#06D500', '#00D323', '#00D24C', '#00D075', '#00CE9D', '#00CDC4',
                '#00ABCB', '#0082CA', '#0059C8', '#0031C6', '#000AC5', '#1C00C3', '#4200C2', '#6800C0', '#8D00BF']
-    #colour = ['#9e0142', '#d53e4f', '#f46d43', '#abdda4', '#fdae61', '#66c2a5', '#3288bd', '#5e4fa2']
-    #colour_25 = [1, 2, 5, 6, 4, 4, 1, 1]
-    other = ['#c6274a', '#42c2f4']
-    #colour_25 = [colour[0], colour[1], colour[1], colour[2], colour[2], colour[2], colour[2], colour[2],
-    #             colour[3], colour[3], colour[3], colour[3], colour[3], colour[3], colour[4], colour[4],
-    #             colour[4], colour[4], colour[5], colour[5], colour[5], colour[5], colour[6], colour[7]]
 
-    n_colors = len(times)
-    l = len(colour_25)
-    assert n_colors <= l, "The colour gradient in this script can only handle 25 time points, add more colours to the colour_25 list"
+    other = ['#000000', '#42c2f4']
 
-    if 'zero' in times:
-        n_colors = n_colors - 1
+    n_colors = len(colours)
+    l = len(full_colour_list)
+    if n_colors <= l:
+        print(f"The colour gradient in this script can only handle 25 different colours, you require {l} colours\n"
+              "duplicating colours: different sequences will have the same colour")
+        required_cols = math.ceil(n_colors / l)
+        full_colour_list = full_colour_list * required_cols
 
-    step = l//n_colors
-
-    j = 0
     cd = collections.OrderedDict()
-    for i, v in enumerate(times):
-        if str(v) == 'zero':
+    for i, v in enumerate(colours):
+        if str(v) == 'black' or str(v) == root.split("_")[field2].lower():
             cd[str(v)] = other[0]
         elif n_colors == 1:
-            cd[str(v)] = other[0]
+            cd[str(v)] = other[1]
         elif n_colors == 2:
             cd[str(v)] = other[i]
         else:
-            cd[str(v)] = colour_25[j]
-            j += step
+            cd[str(v)] = full_colour_list[i]
 
     return cd
 
@@ -170,19 +162,25 @@ def bub_tree(tree, fasta, outfile, root, types, c_dict, show, size,
 
     if dna:
         dna_prot = 'dna'
-        bg_c = {'A': 'green',
-                'C': 'blue',
+        bg_c = {'A': '#1b7837',
+                'C': '#053061',
                 'G': 'black',
-                'T': 'red',
+                'T': '#b2182b',
                 '-': 'grey',
-                'X': 'white'}
+                'X': 'white',
+                'Y': 'grey',
+                'R': 'grey',
+                'W': 'grey'}
 
         fg_c = {'A': 'black',
                 'C': 'black',
                 'G': 'black',
                 'T': 'black',
                 '-': 'black',
-                'X': 'white'}
+                'X': 'white',
+                'Y': 'grey',
+                'R': 'grey',
+                'W': 'grey'}
     else:
         dna_prot = 'aa'
         bg_c = {'K': '#145AFF',
@@ -249,24 +247,28 @@ def bub_tree(tree, fasta, outfile, root, types, c_dict, show, size,
     tstyle.guiding_lines_color = 'slateblue'
     tstyle.show_leaf_name = True
     tstyle.allow_face_overlap = True
-    tstyle.show_branch_length = False
-    tstyle.show_branch_support = True
+    tstyle.show_branch_length = True
+    tstyle.show_branch_support = False
     TreeNode(format=0, support=True)
     # tnode = TreeNode()
-    
+    # edit leaf names for cleaner labels
+    # leaves = tree.get_leaves()
+    # for leaf in leaves:
+    #     leaf.name = leaf.name.split("_")[0] + "_" + leaf.name.split("_")[-2] + "_" + leaf.name.split("_")[-1]
     if root is not None:
         tree.set_outgroup(root)
     else:
         r = tree.get_midpoint_outgroup()
-        # print("r", r)
         tree.set_outgroup(r)
     time_col = []
     tree.ladderize()
+
+    tree_branch_width = 2
     for node in tree.traverse():
         node.ladderize()
         if node.is_leaf() is True:
             name = node.name.split("_")
-            time = name[field2]
+            color_by = name[field2]
 
             if size is True:
                 try:
@@ -276,15 +278,19 @@ def bub_tree(tree, fasta, outfile, root, types, c_dict, show, size,
                     print("No frequency information for ", node.name)
             else:
                 s = 20
+            try:
+                colour = c_dict[color_by]
+            except KeyError as e:
+                print("colour code not found, check maing format and colour field,\nUsing black as the colour")
+                colour = "#000000"
 
-            colour = c_dict[time]
-            time_col.append((time, colour))
+            time_col.append((color_by, colour))
             nstyle = NodeStyle()
             nstyle["shape"] = "circle"
             nstyle["fgcolor"] = colour
             nstyle["size"] = s
-            nstyle["hz_line_width"] = 10
-            nstyle["vt_line_width"] = 10
+            nstyle["hz_line_width"] = tree_branch_width
+            nstyle["vt_line_width"] = tree_branch_width
             nstyle["hz_line_color"] = colour
             nstyle["vt_line_color"] = 'black'
             nstyle["hz_line_type"] = 0
@@ -304,8 +310,8 @@ def bub_tree(tree, fasta, outfile, root, types, c_dict, show, size,
 
             if fasta is not None:
                 seq = fasta[str(node.name)]
-                seqFace = SequenceFace(seq, seqtype=dna_prot, fsize=10, fg_colors=fg_c, bg_colors=bg_c, codon=None,
-                                       col_w=40, alt_col_w=3, special_col=None, interactive=True)
+                seqFace = SequenceFace(seq, seqtype=dna_prot, fsize=2, fg_colors=fg_c, bg_colors=bg_c, codon=None,
+                                       col_w=2, alt_col_w=1, special_col=None, interactive=True)
                 # seqFace = SeqMotifFace(seq=seq, motifs=None, seqtype=dna_prot, gap_format=' ', seq_format='()', scale_factor=20,
                 #              height=20, width=50, fgcolor='white', bgcolor='grey', gapcolor='white', )
                 # seqFace = SeqMotifFace(seq, seq_format="seq", fgcolor=fg_c, bgcolor=bg_c) #interactive=True
@@ -315,8 +321,8 @@ def bub_tree(tree, fasta, outfile, root, types, c_dict, show, size,
         else:
             nstyle = NodeStyle()
             nstyle["size"] = 0.1
-            nstyle["hz_line_width"] = 10
-            nstyle["vt_line_width"] = 10
+            nstyle["hz_line_width"] = tree_branch_width
+            nstyle["vt_line_width"] = tree_branch_width
             node.set_style(nstyle)
             continue
 
@@ -344,8 +350,22 @@ def main(infile, fasta, outpath, name, root, types, show, size, colours, field1,
     outpath = os.path.abspath(outpath)
 
     outfile = os.path.join(outpath, name)
+
+    root = root.lower()
+    t = Tree(infile)
+    leaves = t.get_leaves()
+    for leaf in leaves:
+        leaf.name = leaf.name.lower()
+    leaf_names = [leaf.name for leaf in leaves]
+
     if fasta is not None:
         dc = fasta_to_dct(fasta)
+        new_dict = {}
+        for name, seq in dc.items():
+            new_dict[name.lower()] = seq
+            if name.lower() not in leaf_names:
+                print("The sequence name in your fasta file is not in the tree file:", name)
+                sys.exit("exiting")
         if colours != 3 and consens is None:
             print("Must supply sequence name to use as reference for highlighter/indels with the -con flag")
             sys.exit()
@@ -360,8 +380,9 @@ def main(infile, fasta, outpath, name, root, types, show, size, colours, field1,
         print("scale of zero is silly, everything will disappear! Don't do this")
         sys.exit()
 
-    t = Tree(infile)
-    t_list = get_time(t, field2)
+
+
+    t_list = get_colour_maps(t, field2)
     cdict = col_map(t_list)
 
     bub_tree(t, d, outfile, root, types, cdict, show, size, colours, field1, field2, scale, multiplier, dna)

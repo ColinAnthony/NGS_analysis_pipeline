@@ -202,7 +202,7 @@ def glyc_finder(d, pos_num, outfile):
     :return: None, writes csv file of glycan frequencies over time
     """
 
-    regex_pattern = 'N[\-]*[^P\-][\-]*[TS][^P]'
+    regex_pattern = "N(?=[\-]*[^P-][\-]*[TS])"
     master_profile = collections.OrderedDict()
     sub_dict = collections.defaultdict(list)
     for name, seq in d.items():
